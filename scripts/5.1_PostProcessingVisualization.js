@@ -54,10 +54,10 @@ var imgAreaFloodRiskSectorLandCover = imgAreaFloodRiskSector.add(landCoverMask)
 imgAreaFloodRiskSectorLandCover = imgAreaFloodRiskSectorLandCover.gte(2).selfMask()
 //Map.addLayer(imgAreaFloodRiskSectorLandCover,{bands: ["setor_risco"],opacity: 1, palette: ["ff1f12"]},'flood sector in urban region',false)
 
-var adjustImgForAreaCalc = ee.Image.constant(1).clip(ajuste_areaderiscoinun)
+// (removed) manual adjustment polygon — Table 4 is computed without any manual blending
 //Map.addLayer(adjustImgForAreaCalc)
 
-imgAreaFloodRiskSectorLandCover = imgAreaFloodRiskSectorLandCover.blend(adjustImgForAreaCalc)
+imgAreaFloodRiskSectorLandCover = imgAreaFloodRiskSectorLandCover /* adjustment polygon removed: area metrics computed strictly against the CPRM/SGB sectors */
 //Map.addLayer(imgAreaFloodRiskSectorLandCover)
 
 var areaFloodRiskSector = areaCalculate(imgAreaFloodRiskSectorLandCover,floodRiskSector)
@@ -65,7 +65,7 @@ print("Area of risk sectors in urban regions", areaFloodRiskSector)
 
 var clusteredImageFloodRisk = ee.Image('.../assets/ProjetoEnchente/imgPosClassificadaNaoSuperv_riscoInundacao')
 Map.addLayer(clusteredImageFloodRisk,{},'clusteredImageFloodRisk')
-var clusteredImageFloodRiskFilled = clusteredImageFloodRisk.blend(adjustImgForAreaCalc);
+var clusteredImageFloodRiskFilled = clusteredImageFloodRisk /* adjustment polygon removed: area metrics computed strictly against the CPRM/SGB sectors */;
 var clusteredImageFloodRiskArea = clusteredImageFloodRiskFilled
 .select("cluster").reproject({
   crs: 'EPSG:4326',
@@ -75,7 +75,7 @@ var areaClusteredFloodRiskSector = areaCalculate(clusteredImageFloodRiskArea,flo
 print('Unsupervised classified area (clustered) over the risk sectors:', areaClusteredFloodRiskSector)
 
 var classifiedImageFloodRisk = ee.Image('.../assets/ProjetoEnchente/imgPosClassificadaSemiSuperv_riscoInundacao')
-var classifiedImageFloodRiskFilled = classifiedImageFloodRisk.blend(adjustImgForAreaCalc);
+var classifiedImageFloodRiskFilled = classifiedImageFloodRisk /* adjustment polygon removed: area metrics computed strictly against the CPRM/SGB sectors */;
 var classifiedImageFloodRiskArea = classifiedImageFloodRiskFilled
 .select("classification").reproject({
   crs: 'EPSG:4326',
@@ -87,7 +87,7 @@ print('Semi-supervised classified area over the risk sectors:',areaClassifiedFlo
 
 
 var classifiedImageHAND3mFloodRisk = ee.Image('.../assets/ProjetoEnchente/imgPosClassificadaSlicedHAND_3m_riscoInundacao')
-var classifiedImageHAND3mFloodRiskFilled = classifiedImageHAND3mFloodRisk.blend(adjustImgForAreaCalc);
+var classifiedImageHAND3mFloodRiskFilled = classifiedImageHAND3mFloodRisk /* adjustment polygon removed: area metrics computed strictly against the CPRM/SGB sectors */;
 var classifiedImageHAND3mFloodRiskArea = classifiedImageHAND3mFloodRiskFilled
 .select("classification_hand").reproject({
   crs: 'EPSG:4326',
@@ -97,7 +97,7 @@ var areaClassifiedHAND3mFloodRiskSector = areaCalculate(classifiedImageHAND3mFlo
 print('Sliced classified area (HAND 3 meters) over the risk sectors:', areaClassifiedHAND3mFloodRiskSector)
 
 var classifiedImageHAND4mFloodRisk = ee.Image('.../assets/ProjetoEnchente/imgPosClassificadaSlicedHAND_4m_riscoInundacao')
-var classifiedImageHAND4mFloodRiskFilled = classifiedImageHAND4mFloodRisk.blend(adjustImgForAreaCalc);
+var classifiedImageHAND4mFloodRiskFilled = classifiedImageHAND4mFloodRisk /* adjustment polygon removed: area metrics computed strictly against the CPRM/SGB sectors */;
 var classifiedImageHAND4mFloodRiskArea = classifiedImageHAND4mFloodRiskFilled
 .select("classification_hand").reproject({
   crs: 'EPSG:4326',
@@ -108,7 +108,7 @@ print('Sliced classified area (HAND 4 meters) over the risk sectors:', areaClass
 
 var classifiedImageHAND5mFloodRisk = ee.Image('.../assets/ProjetoEnchente/imgPosClassificadaSlicedHAND_5m_riscoInundacao')
 Map.addLayer(classifiedImageHAND5mFloodRisk,{},'classifiedImageHAND5mFloodRisk')
-var classifiedImageHAND5mFloodRiskFilled = classifiedImageHAND5mFloodRisk.blend(adjustImgForAreaCalc);
+var classifiedImageHAND5mFloodRiskFilled = classifiedImageHAND5mFloodRisk /* adjustment polygon removed: area metrics computed strictly against the CPRM/SGB sectors */;
 var classifiedImageHAND5mFloodRiskArea = classifiedImageHAND5mFloodRiskFilled
 .select("classification_hand").reproject({
   crs: 'EPSG:4326',
