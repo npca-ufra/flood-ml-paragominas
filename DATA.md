@@ -21,10 +21,8 @@ original exports.
 
 ## Archived on Zenodo (large files)
 
-The following exceed the repository size budget and are archived on Zenodo
-(reserved DOI: 10.5281/zenodo.21227778; the record will be activated upon
-publication of the manuscript — until then the files are available from the
-corresponding author on request):
+The following exceed the repository size budget and are openly archived on
+Zenodo (DOI: [10.5281/zenodo.21227778](https://doi.org/10.5281/zenodo.21227778)):
 
 | File | Description |
 |------|-------------|
