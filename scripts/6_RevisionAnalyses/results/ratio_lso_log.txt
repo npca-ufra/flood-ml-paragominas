@@ -1,0 +1,21 @@
+1:0.5 {'auc_pu': np.float64(0.734), 'recall': np.float64(0.589), 'pred_pos_rate': np.float64(0.305), 'lee_liu': np.float64(1.14), 'recall_top5': np.float64(0.092), 'recall_top10': np.float64(0.199), 'recall_top20': np.float64(0.409)}
+1:1 {'auc_pu': np.float64(0.728), 'recall': np.float64(0.393), 'pred_pos_rate': np.float64(0.199), 'lee_liu': np.float64(0.775), 'recall_top5': np.float64(0.089), 'recall_top10': np.float64(0.18), 'recall_top20': np.float64(0.394)}
+1:2 {'auc_pu': np.float64(0.719), 'recall': np.float64(0.212), 'pred_pos_rate': np.float64(0.12), 'lee_liu': np.float64(0.374), 'recall_top5': np.float64(0.089), 'recall_top10': np.float64(0.173), 'recall_top20': np.float64(0.367)}
+1:4.7 (PU count) {'auc_pu': np.float64(0.698), 'recall': np.float64(0.092), 'pred_pos_rate': np.float64(0.056), 'lee_liu': np.float64(0.152), 'recall_top5': np.float64(0.08), 'recall_top10': np.float64(0.157), 'recall_top20': np.float64(0.334)}
+all unlabeled (1:6.7) {'auc_pu': np.float64(0.684), 'recall': np.float64(0.06), 'pred_pos_rate': np.float64(0.043), 'lee_liu': np.float64(0.082), 'recall_top5': np.float64(0.072), 'recall_top10': np.float64(0.157), 'recall_top20': np.float64(0.323)}
+        protocol reference                method  metric  diff     lo    hi  share_le_0
+leave-sector-out     PU-RF                 1:0.5  auc_pu 0.023 -0.029 0.061       0.193
+leave-sector-out     PU-RF                 1:0.5  recall 0.125  0.010 0.273       0.018
+leave-sector-out     PU-RF                 1:0.5 lee_liu 0.256 -0.168 0.592       0.103
+leave-sector-out     PU-RF                   1:1  auc_pu 0.029 -0.022 0.067       0.153
+leave-sector-out     PU-RF                   1:1  recall 0.322  0.142 0.444       0.000
+leave-sector-out     PU-RF                   1:1 lee_liu 0.620 -0.016 0.953       0.029
+leave-sector-out     PU-RF                   1:2  auc_pu 0.038 -0.015 0.077       0.107
+leave-sector-out     PU-RF                   1:2  recall 0.503  0.334 0.603       0.000
+leave-sector-out     PU-RF                   1:2 lee_liu 1.022  0.469 1.319       0.000
+leave-sector-out     PU-RF      1:4.7 (PU count)  auc_pu 0.059 -0.002 0.101       0.032
+leave-sector-out     PU-RF      1:4.7 (PU count)  recall 0.622  0.467 0.711       0.000
+leave-sector-out     PU-RF      1:4.7 (PU count) lee_liu 1.243  0.763 1.510       0.000
+leave-sector-out     PU-RF all unlabeled (1:6.7)  auc_pu 0.073  0.010 0.114       0.005
+leave-sector-out     PU-RF all unlabeled (1:6.7)  recall 0.655  0.505 0.736       0.000
+leave-sector-out     PU-RF all unlabeled (1:6.7) lee_liu 1.313  0.880 1.572       0.000

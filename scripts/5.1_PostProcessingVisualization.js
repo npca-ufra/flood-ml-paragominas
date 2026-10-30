@@ -3,557 +3,323 @@
  * PLATFORM: Google Earth Engine (JavaScript)
  * AUTHOR: Gilberto Junior
  * DESCRIPTION:
- *  - Computation of flood risk areas in urban regions
- *  - Evaluation of classifications (unsupervised, semi-supervised and HAND)
- *  - Generation of flood susceptibility map
- *  - Export of results (tables, images and GIF)
+ *  1) Area-level metrics of the classified maps (HAND 3/4/5 m, X-Means,
+ *     semi-supervised PU) against the CPRM/SGB flood sectors over the
+ *     urban area (MapBiomas, class 24) - Table 4
+ *  2) Export of samples for the separability analysis (Python)
+ *  3) FSIVI index (susceptibility map weighted by variable importance),
+ *     descriptive statistics and histogram
+ *  4) Two-tier susceptibility classes - Table 6
+ *  5) Attention zones, animation (GIF) and exports
+ *
+ * REQUIRED IMPORTS:
+ *   geometry        - study area (rectangle)
+ *   setor_risco     - CPRM/SGB risk sectors (FeatureCollection)
+ *   geometry_forgif - clipping region used for the exports and the animation
+ *   point_text      - position of the label in the animation
+ *   regioes_atencao_inicioDaInund99/96/95/90/89/88 - attention zones
+ *
+ * Asset IDs, band names read from the assets and shapefile fields
+ * (e.g. 'elevacao', 'tipolo_g1') keep their original Portuguese names.
  ***************************************************************/
 
-//Area calculation function (in hectares)
-var areaCalculate = function(img,geom){
-      //The input image is multiplied by an image.pixelArea
-      //image.pixelArea holds the value where each pixel is the area of that pixel in square meters.
-      var areaImg = img.multiply(ee.Image.pixelArea());
 
-      //Sums the multiplied image of the resulting image area within the specified geometry (geom).
-      //This is done using an Earth Engine reducer ee.Reducer.sum().
-      var area = areaImg.reduceRegion({
-        reducer: ee.Reducer.sum(),
-        geometry: geom,
-        maxPixels: 1e11,
-        scale:10
-      })
+// ==================================================================
+// 0) PARAMETERS AND HELPER FUNCTIONS
+// ==================================================================
+var PATH   = '../';
+var FOLDER = '../';
+var CRS    = 'EPSG:4326';
+var SCALE  = 10;  // m
 
-      //Converts the summed value into hectares and rounds to drop the digits after the decimal point
-      var areaValue = ee.Number(area.values().get(0)).divide(10000)
+// Area (ha) of the valid (unmasked) pixels of an image within geometry
+var areaHa = function (img) {
+  var pixelHa = ee.Image.pixelArea().divide(1e4)
+    .updateMask(img.mask().reduce(ee.Reducer.min()).gt(0));
+  return ee.Number(pixelHa.reduceRegion({
+    reducer: ee.Reducer.sum(),
+    geometry: geometry,
+    crs: CRS,
+    scale: SCALE,
+    maxPixels: 1e11
+  }).get('area'));
+};
 
-      //print("Area in hectares:",areaValue)
-      return areaValue
-    }
-
-//Land use and land cover mask
-var spatialData = ee.Image('.../assets/ProjetoEnchente/raster_dados_espaciais_inundacao')
-var landCover = spatialData.select('usocobersolo_classification_2023')
-var uniqueClassValuesYears = ee.List([24]) //urban area class (24), Wetland and Marsh Area, Rivers and Lakes and Ocean
-//print(uniqueClassValuesYears)
-var landCoverMask = landCover.remap(uniqueClassValuesYears, uniqueClassValuesYears)
-landCoverMask = landCover.updateMask(landCoverMask)
-//Map.addLayer(landCoverMask,{},'Land use and land cover mask',false)
-landCoverMask = landCoverMask.gt(0).selfMask().unmask(0).rename('setor_risco')
-//Map.addLayer(landCoverMask,{},"Land use and cover mask",false)
-
-var floodRiskSector = setor_risco.filter(ee.Filter.eq('tipolo_g1', 'Inundação'))
-var imgAreaFloodRiskSector = ee.Image(1).rename("setor_risco").reproject({
-  crs: 'EPSG:4326',
-  scale: 10
-}).clip(floodRiskSector)
-//print(imgAreaFloodRiskSector)
-//Map.addLayer(imgAreaFloodRiskSector)
-
-var imgAreaFloodRiskSectorLandCover = imgAreaFloodRiskSector.add(landCoverMask)
-imgAreaFloodRiskSectorLandCover = imgAreaFloodRiskSectorLandCover.gte(2).selfMask()
-//Map.addLayer(imgAreaFloodRiskSectorLandCover,{bands: ["setor_risco"],opacity: 1, palette: ["ff1f12"]},'flood sector in urban region',false)
-
-// (removed) manual adjustment polygon — Table 4 is computed without any manual blending
-//Map.addLayer(adjustImgForAreaCalc)
-
-imgAreaFloodRiskSectorLandCover = imgAreaFloodRiskSectorLandCover /* adjustment polygon removed: area metrics computed strictly against the CPRM/SGB sectors */
-//Map.addLayer(imgAreaFloodRiskSectorLandCover)
-
-var areaFloodRiskSector = areaCalculate(imgAreaFloodRiskSectorLandCover,floodRiskSector)
-print("Area of risk sectors in urban regions", areaFloodRiskSector)
-
-var clusteredImageFloodRisk = ee.Image('.../assets/ProjetoEnchente/imgPosClassificadaNaoSuperv_riscoInundacao')
-Map.addLayer(clusteredImageFloodRisk,{},'clusteredImageFloodRisk')
-var clusteredImageFloodRiskFilled = clusteredImageFloodRisk /* adjustment polygon removed: area metrics computed strictly against the CPRM/SGB sectors */;
-var clusteredImageFloodRiskArea = clusteredImageFloodRiskFilled
-.select("cluster").reproject({
-  crs: 'EPSG:4326',
-  scale: 10
-}).clip(floodRiskSector)
-var areaClusteredFloodRiskSector = areaCalculate(clusteredImageFloodRiskArea,floodRiskSector)
-print('Unsupervised classified area (clustered) over the risk sectors:', areaClusteredFloodRiskSector)
-
-var classifiedImageFloodRisk = ee.Image('.../assets/ProjetoEnchente/imgPosClassificadaSemiSuperv_riscoInundacao')
-var classifiedImageFloodRiskFilled = classifiedImageFloodRisk /* adjustment polygon removed: area metrics computed strictly against the CPRM/SGB sectors */;
-var classifiedImageFloodRiskArea = classifiedImageFloodRiskFilled
-.select("classification").reproject({
-  crs: 'EPSG:4326',
-  scale: 10
-}).clip(floodRiskSector)
-//Map.addLayer(classifiedImageFloodRiskArea,{},'classifiedImageFloodRisk')
-var areaClassifiedFloodRiskSector = areaCalculate(classifiedImageFloodRiskArea,floodRiskSector)
-print('Semi-supervised classified area over the risk sectors:',areaClassifiedFloodRiskSector)
+var paletteFSIVI = ['22dd0e', 'f9fe31', 'd70c0c'];
+var visFSIVI = {bands: ['suscetibilidade_inundacao'], min: 0.3699895127314622,
+                max: 0.9534484538232613, palette: paletteFSIVI};
 
 
-var classifiedImageHAND3mFloodRisk = ee.Image('.../assets/ProjetoEnchente/imgPosClassificadaSlicedHAND_3m_riscoInundacao')
-var classifiedImageHAND3mFloodRiskFilled = classifiedImageHAND3mFloodRisk /* adjustment polygon removed: area metrics computed strictly against the CPRM/SGB sectors */;
-var classifiedImageHAND3mFloodRiskArea = classifiedImageHAND3mFloodRiskFilled
-.select("classification_hand").reproject({
-  crs: 'EPSG:4326',
-  scale: 10
-}).clip(floodRiskSector)
-var areaClassifiedHAND3mFloodRiskSector = areaCalculate(classifiedImageHAND3mFloodRiskArea,floodRiskSector)
-print('Sliced classified area (HAND 3 meters) over the risk sectors:', areaClassifiedHAND3mFloodRiskSector)
+// ==================================================================
+// 1) INPUT DATA
+// ==================================================================
+var spatialData = ee.Image(PATH + 'raster_dados_espaciais_inundacao');
 
-var classifiedImageHAND4mFloodRisk = ee.Image('.../assets/ProjetoEnchente/imgPosClassificadaSlicedHAND_4m_riscoInundacao')
-var classifiedImageHAND4mFloodRiskFilled = classifiedImageHAND4mFloodRisk /* adjustment polygon removed: area metrics computed strictly against the CPRM/SGB sectors */;
-var classifiedImageHAND4mFloodRiskArea = classifiedImageHAND4mFloodRiskFilled
-.select("classification_hand").reproject({
-  crs: 'EPSG:4326',
-  scale: 10
-}).clip(floodRiskSector)
-var areaClassifiedHAND4mFloodRiskSector = areaCalculate(classifiedImageHAND4mFloodRiskArea,floodRiskSector)
-print('Sliced classified area (HAND 4 meters) over the risk sectors:', areaClassifiedHAND4mFloodRiskSector)
+// Urban mask (MapBiomas 2023, class 24)
+var urbanImg = spatialData.select('usocobersolo_classification_2023')
+  .eq(24).selfMask().clip(geometry).rename('urban');
 
-var classifiedImageHAND5mFloodRisk = ee.Image('.../assets/ProjetoEnchente/imgPosClassificadaSlicedHAND_5m_riscoInundacao')
-Map.addLayer(classifiedImageHAND5mFloodRisk,{},'classifiedImageHAND5mFloodRisk')
-var classifiedImageHAND5mFloodRiskFilled = classifiedImageHAND5mFloodRisk /* adjustment polygon removed: area metrics computed strictly against the CPRM/SGB sectors */;
-var classifiedImageHAND5mFloodRiskArea = classifiedImageHAND5mFloodRiskFilled
-.select("classification_hand").reproject({
-  crs: 'EPSG:4326',
-  scale: 10
-}).clip(floodRiskSector)
-var areaClassifiedHAND5mFloodRiskSector = areaCalculate(classifiedImageHAND5mFloodRiskArea,floodRiskSector)
-print('Sliced classified area (HAND 5 meters) over the risk sectors:', areaClassifiedHAND5mFloodRiskSector)
+// CPRM/SGB flood sectors (vector and raster)
+var floodSectors = setor_risco.filter(ee.Filter.eq('tipolo_g1', 'Inundação'));
+var sectorsImg = ee.Image(0).byte().paint(floodSectors, 1).selfMask()
+  .reproject({crs: CRS, scale: SCALE}).rename('sectors');
+
+// Reference: flood sectors within the urban area
+var referenceImg = urbanImg.updateMask(sectorsImg.mask()).rename('reference');
+
+// Final classified maps (already clipped to the urban area by script 4)
+var methods = [
+  {name: 'HAND 3 m', asset: 'imgPosClassificadaSlicedHAND_3m_riscoInundacao', color: 'FFD700'},
+  {name: 'HAND 4 m', asset: 'imgPosClassificadaSlicedHAND_4m_riscoInundacao', color: 'FFA500'},
+  {name: 'HAND 5 m', asset: 'imgPosClassificadaSlicedHAND_5m_riscoInundacao', color: 'FF4500'},
+  {name: 'X-Means',  asset: 'imgPosClassificadaNaoSuperv_riscoInundacao',     color: '9932CC'},
+  {name: 'PU (semi-supervised)', asset: 'imgPosClassificadaSemiSuperv_riscoInundacao', color: '00A651'}
+];
+var imgHAND5m = ee.Image(PATH + methods[2].asset).select('classification_hand');
+var imgXMeans = ee.Image(PATH + methods[3].asset).select('cluster');
+var imgPU     = ee.Image(PATH + methods[4].asset).select('classification');
 
 
-var percentClassificationHAND_3m = (areaClassifiedHAND3mFloodRiskSector.divide(areaFloodRiskSector)).multiply(100)
-print("Accuracy percentage of the sliced classification (HAND 3 meters) over the CPRM Flood region",percentClassificationHAND_3m)
-var percentClassificationHAND_4m = (areaClassifiedHAND4mFloodRiskSector.divide(areaFloodRiskSector)).multiply(100)
-print("Accuracy percentage of the sliced classification (HAND 4 meters) over the CPRM Flood region",percentClassificationHAND_4m)
-var percentClassificationHAND_5m = (areaClassifiedHAND5mFloodRiskSector.divide(areaFloodRiskSector)).multiply(100)
-print("Accuracy percentage of the sliced classification (HAND 5 meters) over the CPRM Flood region",percentClassificationHAND_5m)
+// ==================================================================
+// 2) FSIVI INDEX
+//    Domain: urban area with elevation <= maximum elevation observed
+//    within a 200 m buffer around the risk sectors
+// ==================================================================
+var fsiviBands = ['elevacao', 'distancia', 'declividade',
+                  'condutividade_hidraulica_solo', 'hand', 'twi'];
 
-var percentCluster = (areaClusteredFloodRiskSector.divide(areaFloodRiskSector)).multiply(100)
-print("Accuracy percentage of the unsupervised classification (clustering) over the CPRM Flood region",percentCluster)
-var percentClassification = (areaClassifiedFloodRiskSector.divide(areaFloodRiskSector)).multiply(100)
-print("Accuracy percentage of the semi-supervised classification (randforest) over the CPRM Flood region",percentClassification)
-
-//Export data to identify class separability in Python.
-var riskSectorGeometryBuffer1000 = setor_risco.geometry().buffer(1700,0)// to make the classification area smaller, just decrease this buffer value
-//Map.addLayer(riskSectorGeometryBuffer1000,{},"setor_risco_Inundacao_CRPM 1000m buffer",false)
-
-var spatialDataWithClassifications = spatialData.addBands(clusteredImageFloodRisk.select('cluster').unmask(0))
-spatialDataWithClassifications = spatialDataWithClassifications.addBands(classifiedImageHAND5mFloodRisk.select('classification_hand').unmask(0))
-spatialDataWithClassifications = spatialDataWithClassifications.addBands(classifiedImageFloodRisk.select('classification').unmask(0))
-
-var bandsSeparabilityEval  = ['elevacao', 'distancia', 'declividade', 'condutividade_hidraulica_solo','hand','twi','classification','cluster','classification_hand']
-spatialDataWithClassifications = spatialDataWithClassifications.select(bandsSeparabilityEval).clip(riskSectorGeometryBuffer1000)
-//Map.addLayer(spatialDataWithClassifications)
-
-var separabilityEvalData = spatialDataWithClassifications.sample({
-  //numPixels: 4000,
-  region: riskSectorGeometryBuffer1000,
-  scale: 10,
-  geometries: true
-});
-
-Export.table.toDrive({
-		collection: separabilityEvalData,
-	  description: "dadosAvaliacaoSeparabilidade",
-	  folder:"projetoEnchenteAssets",
-})
-
-// Display in the console
-//Map.addLayer(separabilityEvalData, {color: 'blue'}, 'Sample pixel points',false)
-print('Number of separability samples',separabilityEvalData.size())
-
-//---------------
-
-var floodSectorsPostClassif = classifiedImageFloodRisk.select('classification').connectedComponents({
-  connectedness: ee.Kernel.plus(1),
-  maxSize: 1024//128
-});
-//print(floodSectorsPostClassif)
-
-//----------------
-
-//Risk heat map
-var riskSectorGeometryBuffer = setor_risco.geometry().buffer(200,0)
-//Map.addLayer(riskSectorGeometryBuffer,{},"setor_risco_Inundacao_CRPM 200m buffer",false)
-
-var spatialData = ee.Image('.../assets/ProjetoEnchente/raster_dados_espaciais_inundacao')
-//print(spatialData)
-var bands  = ['elevacao', 'distancia', 'declividade', 'condutividade_hidraulica_solo','hand','twi','usocobersolo_classification_2023']
-var elevation = spatialData.select(['elevacao'])
-
-// Reduces the image within the buffer region to find the maximum value
-var maxElevation = elevation.reduceRegion({
+var sectorBuffer200m = setor_risco.geometry().buffer(200, 0);
+var elevation = spatialData.select('elevacao');
+var maxElevation = ee.Number(elevation.reduceRegion({
   reducer: ee.Reducer.max(),
-  geometry: riskSectorGeometryBuffer,
-  scale: 10,  // adjust according to your raster resolution
+  geometry: sectorBuffer200m,
+  scale: SCALE,
   maxPixels: 1e10
-});
+}).get('elevacao'));
 
-// Prints the maximum value in the console
-var maxElevation_value = maxElevation.get('elevacao').getInfo()
-//print('Maximum elevation value in the buffer:', maxElevation_value)
+var fsiviDomain = elevation.lte(maxElevation)
+  .and(spatialData.select('usocobersolo_classification_2023').eq(24));
+var predictors = spatialData.select(fsiviBands).updateMask(fsiviDomain);
 
-var mask = elevation.lte(maxElevation_value)  // lte = less than or equal
-
-// Step 3: Applies the mask to the elevation image
-var maskedElevation = elevation.updateMask(mask)
-
-//Map.addLayer(maskedElevation, {min: 0, max: maxElevation_value, palette: ['blue', 'green', 'yellow']}, 'Masked elevation <= maximum value')
-
-var landCoverUse = spatialData.select(['usocobersolo_classification_2023']).eq(24)
-
-var maskedElevationFinal = maskedElevation.updateMask(landCoverUse);
-
-//Map.addLayer(maskedElevationFinal, {min: 0, max: maxElevation_value, palette: ['blue', 'green', 'yellow']},  'Masked elevation + land use = 24');
-
-var spatialDataBandsOfInterest = spatialData.select([
-  'elevacao',
-  'distancia',
-  'declividade',
-  'condutividade_hidraulica_solo',
-  'hand',
-  'twi'
-]);
-
-// Applies the final mask (of elevation + land use) to all these bands
-var imgSpatialDataBandsOfInterest = spatialDataBandsOfInterest.updateMask(maskedElevationFinal.mask());
-
-// Visualizes (for example, the 'distancia' band)
-//Map.addLayer(imgSpatialDataBandsOfInterest,{},"Selected bands")
-//print(imgSpatialDataBandsOfInterest)
-
-/*
-elevacao_norm      = (elevacao - minElev) / (maxElev - minElev);
-dist_rio_norm      = (dist_rio - minDist) / (maxDist - minDist);
-declividade_norm   = (declividade - minDecliv) / (maxDecliv - minDecliv);
-condutividade_norm = (condutividade - minCondut) / (maxCondut - minCondut);
-hand_norm = (hand - minHand) / (maxHand - minHand);
-twi_norm = (twi - minTwi) / (maxTwi - minTwi);
-*/
-
-// Computes the min and max values of each band within the buffer
-var stats = imgSpatialDataBandsOfInterest.reduceRegion({
+// Min-max normalization within the domain: x_norm = (x - min) / (max - min)
+var minMax = predictors.reduceRegion({
   reducer: ee.Reducer.minMax(),
-  scale: 10,
+  scale: SCALE,
   maxPixels: 1e10
 });
-//print(stats)
+var normalized = ee.Image.cat(fsiviBands.map(function (b) {
+  var vmin = ee.Number(minMax.get(b + '_min'));
+  var vmax = ee.Number(minMax.get(b + '_max'));
+  return predictors.select(b).subtract(vmin).divide(vmax.subtract(vmin)).rename(b + '_norm');
+}));
 
-// Extracts the numeric values
-var minElev   = ee.Number(stats.get('elevacao_min'));
-var maxElev   = ee.Number(stats.get('elevacao_max'));
-var minDist   = ee.Number(stats.get('distancia_min'));
-var maxDist   = ee.Number(stats.get('distancia_max'));
-var minDecliv = ee.Number(stats.get('declividade_min'));
-var maxDecliv = ee.Number(stats.get('declividade_max'));
-var minCondut = ee.Number(stats.get('condutividade_hidraulica_solo_min'));
-var maxCondut = ee.Number(stats.get('condutividade_hidraulica_solo_max'));
-var minHand = ee.Number(stats.get('hand_min'));
-var maxHand = ee.Number(stats.get('hand_max'));
-var minTwi = ee.Number(stats.get('twi_min'));
-var maxTwi = ee.Number(stats.get('twi_max'));
+// Weights = Random Forest importances renormalized to sum to 1
+var importances = ee.Feature(ee.FeatureCollection(PATH + 'importancia_atributos_inund').first())
+  .toDictionary(fsiviBands);
+var importanceSum = ee.Number(importances.values().reduce(ee.Reducer.sum()));
+var weights = importances.map(function (k, v) { return ee.Number(v).divide(importanceSum); });
+print('FSIVI weights (sum to 1):', weights);
 
-// Normalizations using .expression()
-var elevationNorm = imgSpatialDataBandsOfInterest.expression(
-  '(e - minE) / (maxE - minE)', {
-    'e': imgSpatialDataBandsOfInterest.select('elevacao'),
-    'minE': minElev,
-    'maxE': maxElev
-  }).rename('elevacao_norm');
-
-var distanceNorm = imgSpatialDataBandsOfInterest.expression(
-  '(d - minD) / (maxD - minD)', {
-    'd': imgSpatialDataBandsOfInterest.select('distancia'),
-    'minD': minDist,
-    'maxD': maxDist
-  }).rename('distancia_norm');
-
-var slopeNorm = imgSpatialDataBandsOfInterest.expression(
-  '(s - minS) / (maxS - minS)', {
-    's': imgSpatialDataBandsOfInterest.select('declividade'),
-    'minS': minDecliv,
-    'maxS': maxDecliv
-  }).rename('declividade_norm');
-
-var conductivityNorm =imgSpatialDataBandsOfInterest.expression(
-  '(c - minC) / (maxC - minC)', {
-    'c': imgSpatialDataBandsOfInterest.select('condutividade_hidraulica_solo'),
-    'minC': minCondut,
-    'maxC': maxCondut
-  }).rename('condutividade_norm');
-
-var handNorm =imgSpatialDataBandsOfInterest.expression(
-  '(h - minH) / (maxH - minH)', {
-    'h': imgSpatialDataBandsOfInterest.select('hand'),
-    'minH': minHand,
-    'maxH': maxHand
-  }).rename('hand_norm');
-
-var twiNorm =imgSpatialDataBandsOfInterest.expression(
-  '(t - minT) / (maxT - minT)', {
-    't': imgSpatialDataBandsOfInterest.select('twi'),
-    'minT': minTwi,
-    'maxT': maxTwi
-  }).rename('twi_norm');
-
-// Joins all the normalized bands
-var normalizedImage = elevationNorm
-  .addBands(distanceNorm)
-  .addBands(slopeNorm)
-  .addBands(conductivityNorm)
-  .addBands(handNorm)
-  .addBands(twiNorm);
-
-var weights = ee.FeatureCollection('.../assets/ProjetoEnchente/importancia_atributos_inund')
-var props = ee.Feature(weights.first()).toDictionary();
-//print('All properties:', props);
-
-var import_slope =  ee.Number(props.get('declividade'))
-var import_elevation =  ee.Number(props.get('elevacao'))
-var import_distance=  ee.Number(props.get('distancia'))
-var import_conductivity =  ee.Number(props.get('condutividade_hidraulica_solo'))
-var import_hand =  ee.Number(props.get('hand'))
-var import_twi =  ee.Number(props.get('twi'))
-
-var weightsSum = import_conductivity.add(import_slope).add(import_distance).add(import_elevation).add(import_hand).add(import_twi)
-//print(weightsSum)
-
-var weight_slope = import_slope.divide(weightsSum)
-var weight_elevation = import_elevation.divide(weightsSum)
-var weight_distance = import_distance.divide(weightsSum)
-var weight_conductivity_hydraulic_soil = import_conductivity.divide(weightsSum)
-var weight_hand = import_hand.divide(weightsSum)
-var weight_twi = import_twi.divide(weightsSum)
-print("Feature weights: (weight_slope,weight_elevation,weight_distance,weight_conductivity_hydraulic_soil,weight_hand,weight_twi) ", weight_slope,weight_elevation,weight_distance,weight_conductivity_hydraulic_soil,weight_hand,weight_twi)
-
-var floodRiskImg = normalizedImage.expression(
-  'weight_sl * (1 - sl) + weight_el * (1 - el) + weight_di * (1 - di) + weight_co * (1 - co) + weight_ha * (1 - ha) + weight_tw * (tw)', {
-    'sl': normalizedImage.select('declividade_norm'),
-    'el': normalizedImage.select('elevacao_norm'),
-    'di': normalizedImage.select('distancia_norm'),
-    'co': normalizedImage.select('condutividade_norm'),
-    'ha': normalizedImage.select('hand_norm'),
-    'tw': normalizedImage.select('twi_norm'),
-    'weight_sl': weight_slope,
-    'weight_el': weight_elevation,
-    'weight_di': weight_distance,
-    'weight_co': weight_conductivity_hydraulic_soil,
-    'weight_ha': weight_hand,
-    'weight_tw': weight_twi,
+// FSIVI: predictors inversely related to susceptibility enter as (1 - x); TWI enters directly
+var fsivi = normalized.expression(
+  'wSl*(1-sl) + wEl*(1-el) + wDi*(1-di) + wKs*(1-ks) + wHa*(1-ha) + wTw*tw', {
+    sl: normalized.select('declividade_norm'),
+    el: normalized.select('elevacao_norm'),
+    di: normalized.select('distancia_norm'),
+    ks: normalized.select('condutividade_hidraulica_solo_norm'),
+    ha: normalized.select('hand_norm'),
+    tw: normalized.select('twi_norm'),
+    wSl: ee.Number(weights.get('declividade')),
+    wEl: ee.Number(weights.get('elevacao')),
+    wDi: ee.Number(weights.get('distancia')),
+    wKs: ee.Number(weights.get('condutividade_hidraulica_solo')),
+    wHa: ee.Number(weights.get('hand')),
+    wTw: ee.Number(weights.get('twi'))
   }).rename('suscetibilidade_inundacao');
 
-//{min: 0.34, max: 0.96, palette: ['#1a9850', '#fee08b', '#d73027']}
-//Map.addLayer(floodRiskImg,imageVisParam2,"Heat Map - Flood Risk")
-floodRiskImg = floodRiskImg.focal_mean({radius: 1, units: 'pixels', kernel: ee.Kernel.square(1)})
+// 3x3 mean smoothing (morphological mean filter, Fig. 17)
+fsivi = fsivi.focal_mean({radius: 1, units: 'pixels', kernel: ee.Kernel.square(1)});
 
-var imageVisParam3 ={ bands: ["suscetibilidade_inundacao"],
-max: 0.9534484538232613,
-min: 0.3699895127314622,
-opacity: 1,
-palette: ["22dd0e","f9fe31","d70c0c"]}
+// FSIVI restricted to the area classified as flood-prone by the PU model
+var fsiviPU = fsivi.updateMask(imgPU.mask());
 
-Map.addLayer(floodRiskImg,imageVisParam3,"Heat Map - Flood Risk (smoothed by mean)")
+// FSIVI descriptive statistics
+var statsReducer = ee.Reducer.minMax()
+  .combine(ee.Reducer.mean(), '', true)
+  .combine(ee.Reducer.stdDev(), '', true)
+  .combine(ee.Reducer.variance(), '', true)
+  .combine(ee.Reducer.skew(), '', true)
+  .combine(ee.Reducer.kurtosis(), '', true)
+  .combine(ee.Reducer.percentile([0, 25, 50, 75, 100]), '', true);
+print('FSIVI - descriptive statistics:',
+      fsivi.reduceRegion({reducer: statsReducer, scale: SCALE, maxPixels: 1e10}));
+print('FSIVI - minimum within the PU flood-prone area:',
+      fsiviPU.reduceRegion({reducer: ee.Reducer.min(), scale: SCALE, maxPixels: 1e10}));
 
-Map.addLayer(floodSectorsPostClassif.randomVisualizer(), null, 'Risk Zones');
-//Map.addLayer(floodRiskImg.gte(0.83),imageVisParam2,"Heat Map - Flood Risk level 83%")
+// Histogram
+print(ui.Chart.image.histogram({image: fsivi, region: geometry, scale: SCALE})
+  .setOptions({
+    title: 'Histogram - FSIVI (Flood Susceptibility Index based on Variable Importance)',
+    hAxis: {title: 'Pixel value'},
+    vAxis: {title: 'Frequency'},
+    series: [{color: 'purple'}]
+  }));
 
-var riskMask = classifiedImageFloodRisk.select('classification');
-riskMask = riskMask.updateMask(riskMask.mask());
-var floodRiskImgMasked = floodRiskImg.select('suscetibilidade_inundacao').updateMask(riskMask);
-Map.addLayer(floodRiskImgMasked,imageVisParam3,"Heat Map over Flood Risk")
 
-// Computes statistics over the generated image
-var minmaxFloodRiskImg = floodRiskImg.reduceRegion({
-  reducer: ee.Reducer.minMax(),
-  scale: 10,
-  maxPixels: 1e10
-});
-print("minmaxFloodRiskImg",minmaxFloodRiskImg)
+// ==================================================================
+// 3) TABLE 4 - AREA-LEVEL METRICS
+//    Reference (denominator) = flood sectors within the urban area
+// ==================================================================
+var sectorAreaVector = floodSectors.geometry(1).area(1).divide(1e4);  // official polygon area
+var urbanArea        = areaHa(urbanImg);
+var fsiviDomainArea  = areaHa(fsivi);
+var referenceArea    = areaHa(referenceImg);
 
-var meanFloodRiskImg = floodRiskImg.reduceRegion({
-  reducer: ee.Reducer.mean(),
-  scale: 10,
-  maxPixels: 1e10
-});
-print("meanFloodRiskImg",meanFloodRiskImg)
+print('CPRM/SGB flood sectors, total polygon area (ha):', sectorAreaVector);
+print('Urban area (MapBiomas, 10 m) within the study area (ha):', urbanArea);
+print('Analysed urban area - FSIVI domain (ha):', fsiviDomainArea);
+print('Flood sectors within the urban area - reference (ha):', referenceArea);
+print('Urban share of the sectors (%):', referenceArea.divide(sectorAreaVector).multiply(100));
 
-var medianFloodRiskImg = floodRiskImg.reduceRegion({
-  reducer: ee.Reducer.median(),
-  scale: 10,
-  maxPixels: 1e10
-});
-print("medianFloodRiskImg",medianFloodRiskImg)
+var table4 = ee.FeatureCollection(methods.map(function (m) {
+  var predicted = ee.Image(PATH + m.asset).select(0).selfMask().clip(geometry);
 
-var stdDevFloodRiskImg = floodRiskImg.reduceRegion({
-  reducer: ee.Reducer.stdDev(),
-  scale: 10,
-  maxPixels: 1e10
-});
-print("stdDevFloodRiskImg",stdDevFloodRiskImg)
+  var P = areaHa(predicted);                                     // predicted area
+  var I = areaHa(predicted.updateMask(referenceImg.mask()));     // predicted within reference
 
-var varianceFloodRiskImg = floodRiskImg.reduceRegion({
-  reducer: ee.Reducer.variance(),
-  scale: 10,
-  maxPixels: 1e10
-});
-print("varianceFloodRiskImg",varianceFloodRiskImg)
-
-var kurtosisFloodRiskImg = floodRiskImg.reduceRegion({
-  reducer: ee.Reducer.kurtosis(),
-  scale: 10,
-  maxPixels: 1e10
-});
-print("kurtosisFloodRiskImg",kurtosisFloodRiskImg)
-
-var skewFloodRiskImg = floodRiskImg.reduceRegion({
-  reducer: ee.Reducer.skew(),
-  scale: 10,
-  maxPixels: 1e10
-});
-print("skewFloodRiskImg",skewFloodRiskImg)
-
-var percentileFloodRiskImg = floodRiskImg.reduceRegion({
-  reducer: ee.Reducer.percentile([0, 25, 50,75, 100]),
-  scale: 10,
-  maxPixels: 1e10
-});
-print("percentileFloodRiskImg",percentileFloodRiskImg)
-
-Map.addLayer(floodRiskSector,{},"CPRM risk sectors")
-
-// 5. Display the histogram in the console
-var hist = ui.Chart.image.histogram({
-  //image: floodRiskImgMasked,//
-  image: floodRiskImg,
-  region: geometry,
-  scale: 10,  // spatial resolution
-  //minBucketWidth: 10  // minimum histogram bucket width
-}).setOptions({
-  title: 'Histogram - FSIVI (Flood Susceptibility Index based on Variable Importance)',
-  hAxis: {title: 'Pixel value'},
-  vAxis: {title: 'Frequency'},
-  series: [{color: 'purple'}]
-});
-print(hist);
-
-// Import the geetools text library
-var Text = require('users/gena/packages:text');
-// List of levels from 97 down to 83
-var levels = ee.List.sequence(99, 75, -1);
-// Uses iterate to build the list of images
-var image_forGif_list = levels.iterate(function(level, list) {
-  level = ee.Number(level);
-  var label = ee.String('Risk level ')
-  .cat(level.format('%d'))
-  .cat('%');
-
-  list = ee.List(list);
-  var level_prob = level.divide(100);
-  var image_forGif = floodRiskImg.gte(level_prob).clip(geometry_forgif).focal_mean({radius: 1, units: 'pixels', kernel: ee.Kernel.square(1)});
-  //var image_forGif = floodRiskImgMasked.gte(level_prob).clip(geometry_forgif).focal_mean({radius: 1, units: 'pixels', kernel: ee.Kernel.square(1)});
-
-  var text = Text.draw(label, point_text, 10, {
-    fontSize: 32,
-    textColor: 'FFFFFF',
-    outlineColor: '000000',
-    outlineWidth: 2
+  return ee.Feature(null, {
+    method:              m.name,
+    predicted_area_ha:   P,
+    inside_ha:           I,
+    outside_ha:          P.subtract(I),
+    area_recall_pct:     I.divide(referenceArea).multiply(100),
+    area_precision_pct:  I.divide(P).multiply(100),
+    // Fpb (Li and Guo 2013; Li et al. 2022) = 2 TP / (TP + FN + FP),
+    // with TP = I, FN = reference - I and FP = P - I, i.e. 2 I / (reference + P - I)
+    Fpb:                 I.multiply(2).divide(referenceArea.add(P).subtract(I)),
+    pct_analysed_urban_area: P.divide(fsiviDomainArea).multiply(100),
+    // checks: must equal inside_ha and 0, respectively
+    check_inside_sectors_ha:  areaHa(predicted.updateMask(sectorsImg.mask())),
+    check_outside_domain_ha:  P.subtract(areaHa(predicted.updateMask(fsivi.mask())))
   });
-  var image_forGif_text = image_forGif.visualize({
-    palette: ["22dd0e", "f9fe31", "d70c0c"]
-  }).blend(text);
-  return list.add(image_forGif_text);
-}, ee.List([]));
-// Converts the result into an ImageCollection
-image_forGif_list = ee.List(image_forGif_list);
-var collection_imgs = ee.ImageCollection(image_forGif_list);
-print(collection_imgs);
-//Map.addLayer(collection_imgs.first(), {}, 'First image with text');
+}));
+print('Table 4 - area-level metrics', table4);
 
-var videoArgs = {
-  dimensions: 1024,
-  region: geometry_forgif,
-  framesPerSecond: 1,
-  format: 'gif',
-  min: 0.3699895127314622,
-  max: 0.9534484538232613,
-  palette: ["22dd0e","f9fe31","d70c0c"]
-};
-//low-resolution preview
-print(ui.Thumbnail(collection_imgs))//, videoArgs));
 
-// Export as video
-Export.video.toDrive({
-  collection: collection_imgs,
-  description: 'video_riscoinduncacao_PGM',
-  fileNamePrefix: 'riscoInundacao_animation',
-  framesPerSecond: 1,
-  region: geometry_forgif,
-  dimensions: 1024,
-  folder:"projetoEnchenteAssets",
-});
+// ==================================================================
+// 4) TABLE 6 - TWO-TIER SUSCEPTIBILITY CLASSES
+//    Very high = PU flood-prone area; other classes = FSIVI natural breaks (Jenks)
+// ==================================================================
+var outsidePU = fsivi.updateMask(imgPU.mask().unmask(0).not());
+var fsiviClasses = [
+  {name: 'Very low (<0.51)',       img: outsidePU.lt(0.5065).selfMask()},
+  {name: 'Low (0.51-0.64)',        img: outsidePU.gte(0.5065).and(outsidePU.lt(0.6351)).selfMask()},
+  {name: 'Moderate (0.64-0.75)',   img: outsidePU.gte(0.6351).and(outsidePU.lt(0.7450)).selfMask()},
+  {name: 'High (>=0.75)',          img: outsidePU.gte(0.7450).selfMask()},
+  {name: 'Very high (PU flood-prone area)', img: fsiviPU}
+];
+var table6 = ee.FeatureCollection(fsiviClasses.map(function (c) {
+  var a = areaHa(c.img);
+  return ee.Feature(null, {class_name: c.name, area_ha: a,
+                           pct_analysed_urban_area: a.divide(fsiviDomainArea).multiply(100)});
+}));
+print('Table 6 - susceptibility classes', table6);
+print('PU pixels with FSIVI >= 0.745 (%):',
+      areaHa(fsiviPU.gte(0.7450).selfMask()).divide(areaHa(fsiviPU)).multiply(100));
 
-var assetPathEnchente = '.../assets/ProjetoEnchente/';
+// Class raster (1-5) for visualization (Fig. S9)
+var classesImg = ee.Image(0)
+  .where(outsidePU.lt(0.5065), 1)
+  .where(outsidePU.gte(0.5065), 2)
+  .where(outsidePU.gte(0.6351), 3)
+  .where(outsidePU.gte(0.7450), 4)
+  .where(imgPU.mask().unmask(0).and(fsivi.mask()), 5)
+  .selfMask().rename('class');
+var paletteClasses = ['2C7BB6', 'ABD9E9', 'FFFFBF', 'FDAE61', 'D7191C'];
 
-Export.image.toAsset({
-      image:floodRiskImg,
-      description:"Mapa_calor_de_risco_inundacao_posClassif",
-      assetId:assetPathEnchente+"Mapa_calor_de_risco_inundacao_posClassif",
-      region:geometry_forgif,
-      scale:10,
-      maxPixels:1e10,
-})
-Export.image.toDrive({
-  image: floodRiskImg,
-  description: 'Mapa_calor_de_risco_inundacao_posClassif',
-  folder:"projetoEnchenteAssets",
-  region: geometry_forgif,
-  scale: 10,
-  maxPixels: 1e10
-});
 
-Export.image.toAsset({
-      image:floodRiskImgMasked,
-      description:"Mapa_calor_sobre_risco_inundacao_masked_posClassif",//Heat Map over Flood Risk
-      assetId:assetPathEnchente+"Mapa_calor_sobre_risco_inundacao_masked_posClassif",
-      region:geometry_forgif,
-      scale:10,
-      maxPixels:1e10,
-})
-Export.image.toDrive({
-  image: floodRiskImgMasked,
-  description: 'Mapa_calor_sobre_risco_inundacao_masked_posClassif',
-  folder:"projetoEnchenteAssets",
-  region: geometry_forgif,
-  scale: 10,
-  maxPixels: 1e10
-});
-
-Export.image.toAsset({
-      image:floodSectorsPostClassif.randomVisualizer(),
-      description:"Zonas_risco_inun_posClassif",
-      assetId:assetPathEnchente+"Zonas_risco_inun_posClassif",
-      region:geometry_forgif,
-      scale:10,
-      maxPixels:1e10,
-})
-print(floodSectorsPostClassif.randomVisualizer().toInt8())
-Export.image.toDrive({
-  image: floodSectorsPostClassif.randomVisualizer().toInt8(),
-  description: 'Zonas_risco_inun_posClassif',
-  folder:"projetoEnchenteAssets",
-  region: geometry_forgif,
-  scale: 10,
-  maxPixels: 1e10
-});
-
+// ==================================================================
+// 5) ATTENTION ZONES (connected components of the PU flood-prone area)
+// ==================================================================
+var zonesPU = imgPU.connectedComponents({connectedness: ee.Kernel.plus(1), maxSize: 1024});
 var highlightRegions = ee.FeatureCollection([
-regioes_atencao_inicioDaInund99,
-regioes_atencao_inicioDaInund96,
-regioes_atencao_inicioDaInund95,
-regioes_atencao_inicioDaInund90,
-regioes_atencao_inicioDaInund89,
-regioes_atencao_inicioDaInund88
-])
-Map.addLayer(highlightRegions,{},"highlightRegions")
-Export.table.toDrive({
-  collection: highlightRegions,
-  description: 'regioes_de_destaques',
-  folder:"projetoEnchenteAssets",
+  regioes_atencao_inicioDaInund99, regioes_atencao_inicioDaInund96,
+  regioes_atencao_inicioDaInund95, regioes_atencao_inicioDaInund90,
+  regioes_atencao_inicioDaInund89, regioes_atencao_inicioDaInund88
+]);
+
+
+// ==================================================================
+// 6) ANIMATION (GIF): FSIVI above levels from 99% to 75%
+// ==================================================================
+var Text = require('users/gena/packages:text');
+var gifFrames = ee.ImageCollection(ee.List.sequence(99, 75, -1).map(function (level) {
+  level = ee.Number(level);
+  var label = Text.draw(ee.String('Risk level ').cat(level.format('%d')).cat('%'),
+                        point_text, 10,
+                        {fontSize: 32, textColor: 'FFFFFF', outlineColor: '000000', outlineWidth: 2});
+  return fsivi.gte(level.divide(100)).clip(geometry_forgif)
+    .focal_mean({radius: 1, units: 'pixels', kernel: ee.Kernel.square(1)})
+    .visualize({palette: paletteFSIVI}).blend(label);
+}));
+print('Animation preview', ui.Thumbnail(gifFrames,
+      {dimensions: 512, region: geometry_forgif, framesPerSecond: 1, format: 'gif'}));
+
+
+// ==================================================================
+// 7) SAMPLES FOR THE SEPARABILITY ANALYSIS (Python)
+// ==================================================================
+var separabilityBuffer = setor_risco.geometry().buffer(1700, 0);  // reduce to shrink the sampled area
+var separabilitySamples = spatialData.select(fsiviBands)
+  .addBands(imgPU.unmask(0))
+  .addBands(imgXMeans.unmask(0))
+  .addBands(imgHAND5m.unmask(0))
+  .clip(separabilityBuffer)
+  .sample({region: separabilityBuffer, scale: SCALE, geometries: true});
+print('Number of separability samples:', separabilitySamples.size());
+
+
+// ==================================================================
+// 8) EXPORTS (run from the Tasks tab)
+// ==================================================================
+Export.table.toDrive({collection: table4, description: 'Table4_area_metrics',
+                      folder: FOLDER, fileFormat: 'CSV'});
+Export.table.toDrive({collection: table6, description: 'Table6_susceptibility_classes',
+                      folder: FOLDER, fileFormat: 'CSV'});
+Export.table.toDrive({collection: separabilitySamples, description: 'dadosAvaliacaoSeparabilidade',
+                      folder: FOLDER});
+Export.table.toDrive({collection: highlightRegions, description: 'regioes_de_destaques',
+                      folder: FOLDER});
+
+var exportImage = function (img, name) {
+  Export.image.toAsset({image: img, description: name, assetId: PATH + name,
+                        region: geometry_forgif, scale: SCALE, maxPixels: 1e10});
+  Export.image.toDrive({image: img, description: name, folder: FOLDER,
+                        region: geometry_forgif, scale: SCALE, maxPixels: 1e10});
+};
+exportImage(fsivi,   'Mapa_calor_de_risco_inundacao_posClassif');
+exportImage(fsiviPU, 'Mapa_calor_sobre_risco_inundacao_masked_posClassif');
+exportImage(zonesPU.randomVisualizer().toInt8(), 'Zonas_risco_inun_posClassif');
+
+Export.video.toDrive({collection: gifFrames, description: 'video_riscoinduncacao_PGM',
+                      fileNamePrefix: 'riscoInundacao_animation', framesPerSecond: 1,
+                      region: geometry_forgif, dimensions: 1024, folder: FOLDER});
+
+
+// ==================================================================
+// 9) VISUALIZATION
+// ==================================================================
+Map.centerObject(floodSectors, 14);
+Map.addLayer(urbanImg,     {palette: ['999999'], opacity: 0.5}, '1) Urban area (MapBiomas 24)');
+Map.addLayer(sectorsImg,   {palette: ['0000FF'], opacity: 0.4}, '2) Flood sectors (raster)', false);
+Map.addLayer(referenceImg, {palette: ['FF0000']},               '3) Reference: sectors within urban area');
+methods.forEach(function (m) {
+  Map.addLayer(ee.Image(PATH + m.asset).select(0).selfMask(),
+               {palette: [m.color], opacity: 0.7}, '4) ' + m.name, m.name.indexOf('PU') === 0);
 });
+Map.addLayer(fsivi,      visFSIVI, '5) FSIVI', false);
+Map.addLayer(fsiviPU,    visFSIVI, '6) FSIVI over the PU flood-prone area', false);
+Map.addLayer(classesImg, {min: 1, max: 5, palette: paletteClasses}, '7) Susceptibility classes (Table 6)', false);
+Map.addLayer(zonesPU.randomVisualizer(), {}, '8) Attention zones (PU components)', false);
+Map.addLayer(highlightRegions.style({color: '000000', fillColor: '00000000', width: 2}), {}, '9) Highlighted regions', false);
+Map.addLayer(floodSectors.style({color: '0000FF', fillColor: '00000000', width: 2}), {}, '10) CPRM/SGB sector outlines');

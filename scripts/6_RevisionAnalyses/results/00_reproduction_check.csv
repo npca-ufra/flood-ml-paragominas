@@ -1,0 +1,11 @@
+,0
+n_spies,387.0
+mu_sigma,0.36372658702543303
+q1,0.474413348474478
+below_mu_sigma,0.16795865633074936
+tau,0.474413348474478
+promoted,3844.0
+reliable_negatives,9055.0
+silhouette_k,7.0
+table2_rf_auc_vs_spy_labels,0.9710084599230655
+test_recall_342,0.8830409356725146

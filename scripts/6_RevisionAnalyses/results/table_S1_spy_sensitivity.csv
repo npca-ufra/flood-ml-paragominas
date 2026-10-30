@@ -1,0 +1,4 @@
+spy_fraction,runs_triggering,spies_below_mu_sigma_pct,tau_mu_sigma,tau_Q1,tau_P10,reliable_negatives_Q1
+0.15,10,17.759,0.358,0.494,0.145,8981.0
+0.2,10,18.243,0.342,0.474,0.122,8971.3
+0.25,10,18.306,0.334,0.456,0.13,8989.8

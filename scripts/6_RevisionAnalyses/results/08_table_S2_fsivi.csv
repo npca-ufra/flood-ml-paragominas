@@ -1,0 +1,12 @@
+Quantity,Value
+"Spearman correlation, FSIVI vs Random Forest probability",0.7932679937326891
+ROC-AUC of FSIVI for samples classified as flood-prone by the Random Forest (p >= 0.5),0.9232600448923511
+"Quartile classes, FSIVI vs Random Forest: quadratic-weighted kappa",0.7514995464187643
+Quartile classes: agreement within one class,0.9543708296825504
+"Quintile classes, FSIVI vs Random Forest: quadratic-weighted kappa",0.7718175079183234
+Quintile classes: agreement within one class,0.8939812630585698
+"Spearman correlation, importance-weighted vs equal-weighted FSIVI",0.9807011292256537
+"Spearman correlation under 1,000 random perturbations of the weights: median",0.9835136092332215
+"Spearman correlation under 1,000 random perturbations of the weights: minimum",0.9012904761358823
+ROC-AUC against the original sector labels (labeled vs unlabeled): FSIVI,0.7616665910614107
+ROC-AUC against the original sector labels (labeled vs unlabeled): Random Forest (out-of-fold),0.7920133807702312

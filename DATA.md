@@ -22,7 +22,7 @@ original exports.
 ## Archived on Zenodo (large files)
 
 The following exceed the repository size budget and are openly archived on
-Zenodo (DOI: [10.5281/zenodo.21227778](https://doi.org/10.5281/zenodo.21227778)):
+Zenodo (concept DOI, which resolves to the latest version: [10.5281/zenodo.21227777](https://doi.org/10.5281/zenodo.21227777)):
 
 | File | Description |
 |------|-------------|

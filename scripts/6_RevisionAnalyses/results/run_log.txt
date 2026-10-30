@@ -1,0 +1,144 @@
+reproduction check: {'n_spies': 387.0, 'mu_sigma': 0.364, 'q1': 0.474, 'below_mu_sigma': 0.168, 'tau': 0.474, 'promoted': 3844.0, 'reliable_negatives': 9055.0, 'silhouette_k': 7.0, 'table2_rf_auc_vs_spy_labels': 0.971, 'test_recall_342': 0.883}
+  5-fold spatial CV: fold 1/5
+  5-fold spatial CV: fold 2/5
+  5-fold spatial CV: fold 3/5
+  5-fold spatial CV: fold 4/5
+  5-fold spatial CV: fold 5/5
+  leave-sector-out: fold 1/18
+  leave-sector-out: fold 2/18
+  leave-sector-out: fold 3/18
+  leave-sector-out: fold 4/18
+  leave-sector-out: fold 5/18
+  leave-sector-out: fold 6/18
+  leave-sector-out: fold 7/18
+  leave-sector-out: fold 8/18
+  leave-sector-out: fold 9/18
+  leave-sector-out: fold 10/18
+  leave-sector-out: fold 11/18
+  leave-sector-out: fold 12/18
+  leave-sector-out: fold 13/18
+  leave-sector-out: fold 14/18
+  leave-sector-out: fold 15/18
+  leave-sector-out: fold 16/18
+  leave-sector-out: fold 17/18
+  leave-sector-out: fold 18/18
+         protocol                                                       method  auc_pu  auc_pu_lo  auc_pu_hi  recall  recall_lo  recall_hi  pred_pos_rate  lee_liu  recall_top10
+5-fold spatial CV              PU-RF (labels of the paper, derived once on D*)   0.792      0.741      0.831   0.771      0.631      0.869          0.379    1.572         0.302
+5-fold spatial CV                                                        PU-RF   0.785      0.730      0.826   0.701      0.523      0.830          0.339    1.450         0.323
+5-fold spatial CV                                  RF + random negatives (1:1)   0.744      0.686      0.807   0.440      0.275      0.610          0.204    0.951         0.279
+5-fold spatial CV RF + random negatives (same number as PU reliable negatives)   0.725      0.658      0.793   0.215      0.086      0.369          0.077    0.600         0.259
+5-fold spatial CV                      PU-RF, mu-sigma threshold (no fallback)   0.776      0.730      0.813   0.780      0.630      0.885          0.403    1.507         0.258
+5-fold spatial CV                             PU-RF, 10th-percentile threshold   0.763      0.725      0.813   0.858      0.722      0.945          0.487    1.509         0.219
+5-fold spatial CV                                           PU-RF without ksat   0.759      0.709      0.804   0.714      0.547      0.841          0.366    1.394         0.237
+5-fold spatial CV                                                   PU-XGBoost   0.794      0.734      0.837   0.725      0.558      0.847          0.350    1.504         0.348
+5-fold spatial CV                                                 PU-SVM (RBF)   0.781      0.717      0.828   0.720      0.536      0.849          0.350    1.481         0.316
+5-fold spatial CV                                              Elkan-Noto (RF)   0.713      0.644      0.784   0.354      0.187      0.539          0.164    0.767         0.256
+5-fold spatial CV                                              PU bagging (RF)   0.747      0.688      0.809   0.452      0.279      0.628          0.211    0.966         0.280
+5-fold spatial CV                                                One-class SVM   0.755      0.725      0.791   0.695      0.494      0.829          0.357    1.354         0.254
+5-fold spatial CV                        MaxEnt-type presence-background model   0.755      0.695      0.807   0.741      0.554      0.860          0.399    1.377         0.274
+ leave-sector-out                                                        PU-RF   0.757      0.693      0.791   0.714      0.565      0.792          0.366    1.395         0.251
+ leave-sector-out                                  RF + random negatives (1:1)   0.728      0.681      0.763   0.393      0.262      0.519          0.199    0.775         0.180
+ leave-sector-out RF + random negatives (same number as PU reliable negatives)   0.698      0.656      0.743   0.092      0.036      0.174          0.056    0.152         0.157
+ leave-sector-out                      PU-RF, mu-sigma threshold (no fallback)   0.759      0.696      0.793   0.793      0.646      0.862          0.440    1.430         0.229
+ leave-sector-out                             PU-RF, 10th-percentile threshold   0.750      0.689      0.783   0.892      0.729      0.961          0.553    1.440         0.201
+ leave-sector-out                                           PU-RF without ksat   0.735      0.682      0.769   0.725      0.577      0.800          0.380    1.381         0.200
+ leave-sector-out                                                   PU-XGBoost   0.760      0.694      0.798   0.733      0.585      0.809          0.373    1.441         0.242
+ leave-sector-out                                                 PU-SVM (RBF)   0.743      0.676      0.782   0.730      0.560      0.813          0.371    1.435         0.182
+ leave-sector-out                                              Elkan-Noto (RF)   0.692      0.649      0.739   0.225      0.129      0.328          0.141    0.360         0.157
+ leave-sector-out                                              PU bagging (RF)   0.724      0.677      0.763   0.386      0.266      0.522          0.203    0.734         0.180
+ leave-sector-out                                                One-class SVM   0.737      0.698      0.793   0.730      0.600      0.825          0.390    1.365         0.229
+ leave-sector-out                        MaxEnt-type presence-background model   0.709      0.663      0.743   0.728      0.536      0.830          0.450    1.179         0.162
+         protocol reference                                                       method       metric   diff     lo     hi  share_le_0
+5-fold spatial CV     PU-RF              PU-RF (labels of the paper, derived once on D*)       auc_pu -0.007 -0.017  0.002       0.934
+5-fold spatial CV     PU-RF              PU-RF (labels of the paper, derived once on D*)      lee_liu -0.122 -0.286 -0.038       1.000
+5-fold spatial CV     PU-RF              PU-RF (labels of the paper, derived once on D*) recall_top10  0.021 -0.006  0.046       0.101
+5-fold spatial CV     PU-RF                                  RF + random negatives (1:1)       auc_pu  0.041 -0.004  0.083       0.039
+5-fold spatial CV     PU-RF                                  RF + random negatives (1:1)      lee_liu  0.499  0.042  0.789       0.022
+5-fold spatial CV     PU-RF                                  RF + random negatives (1:1) recall_top10  0.043 -0.020  0.117       0.128
+5-fold spatial CV     PU-RF RF + random negatives (same number as PU reliable negatives)       auc_pu  0.060  0.017  0.099       0.001
+5-fold spatial CV     PU-RF RF + random negatives (same number as PU reliable negatives)      lee_liu  0.850  0.354  1.156       0.001
+5-fold spatial CV     PU-RF RF + random negatives (same number as PU reliable negatives) recall_top10  0.064 -0.015  0.161       0.061
+5-fold spatial CV     PU-RF                      PU-RF, mu-sigma threshold (no fallback)       auc_pu  0.010 -0.014  0.028       0.194
+5-fold spatial CV     PU-RF                      PU-RF, mu-sigma threshold (no fallback)      lee_liu -0.057 -0.266  0.074       0.734
+5-fold spatial CV     PU-RF                      PU-RF, mu-sigma threshold (no fallback) recall_top10  0.065  0.015  0.106       0.008
+5-fold spatial CV     PU-RF                             PU-RF, 10th-percentile threshold       auc_pu  0.022 -0.022  0.054       0.169
+5-fold spatial CV     PU-RF                             PU-RF, 10th-percentile threshold      lee_liu -0.059 -0.469  0.227       0.617
+5-fold spatial CV     PU-RF                             PU-RF, 10th-percentile threshold recall_top10  0.104  0.043  0.145       0.001
+5-fold spatial CV     PU-RF                                           PU-RF without ksat       auc_pu  0.026  0.015  0.037       0.000
+5-fold spatial CV     PU-RF                                           PU-RF without ksat      lee_liu  0.056 -0.015  0.094       0.063
+5-fold spatial CV     PU-RF                                           PU-RF without ksat recall_top10  0.086  0.048  0.122       0.000
+5-fold spatial CV     PU-RF                                                   PU-XGBoost       auc_pu -0.009 -0.018 -0.001       0.982
+5-fold spatial CV     PU-RF                                                   PU-XGBoost      lee_liu -0.054 -0.114 -0.015       1.000
+5-fold spatial CV     PU-RF                                                   PU-XGBoost recall_top10 -0.025 -0.077  0.036       0.735
+5-fold spatial CV     PU-RF                                                 PU-SVM (RBF)       auc_pu  0.004 -0.013  0.022       0.355
+5-fold spatial CV     PU-RF                                                 PU-SVM (RBF)      lee_liu -0.031 -0.135  0.103       0.744
+5-fold spatial CV     PU-RF                                                 PU-SVM (RBF) recall_top10  0.007 -0.064  0.074       0.452
+5-fold spatial CV     PU-RF                                              Elkan-Noto (RF)       auc_pu  0.072  0.025  0.115       0.000
+5-fold spatial CV     PU-RF                                              Elkan-Noto (RF)      lee_liu  0.683  0.223  0.984       0.004
+5-fold spatial CV     PU-RF                                              Elkan-Noto (RF) recall_top10  0.067 -0.020  0.162       0.076
+5-fold spatial CV     PU-RF                                              PU bagging (RF)       auc_pu  0.039 -0.006  0.080       0.049
+5-fold spatial CV     PU-RF                                              PU bagging (RF)      lee_liu  0.484 -0.028  0.793       0.027
+5-fold spatial CV     PU-RF                                              PU bagging (RF) recall_top10  0.043 -0.021  0.111       0.130
+5-fold spatial CV     PU-RF                                                One-class SVM       auc_pu  0.030 -0.034  0.077       0.194
+5-fold spatial CV     PU-RF                                                One-class SVM      lee_liu  0.096 -0.291  0.428       0.311
+5-fold spatial CV     PU-RF                                                One-class SVM recall_top10  0.069 -0.053  0.162       0.101
+5-fold spatial CV     PU-RF                        MaxEnt-type presence-background model       auc_pu  0.030  0.001  0.059       0.023
+5-fold spatial CV     PU-RF                        MaxEnt-type presence-background model      lee_liu  0.073 -0.170  0.244       0.261
+5-fold spatial CV     PU-RF                        MaxEnt-type presence-background model recall_top10  0.049 -0.052  0.206       0.230
+ leave-sector-out     PU-RF                                  RF + random negatives (1:1)       auc_pu  0.029 -0.022  0.067       0.153
+ leave-sector-out     PU-RF                                  RF + random negatives (1:1)      lee_liu  0.620 -0.016  0.953       0.029
+ leave-sector-out     PU-RF                                  RF + random negatives (1:1) recall_top10  0.072 -0.044  0.124       0.162
+ leave-sector-out     PU-RF RF + random negatives (same number as PU reliable negatives)       auc_pu  0.059 -0.002  0.101       0.032
+ leave-sector-out     PU-RF RF + random negatives (same number as PU reliable negatives)      lee_liu  1.243  0.763  1.510       0.000
+ leave-sector-out     PU-RF RF + random negatives (same number as PU reliable negatives) recall_top10  0.094 -0.009  0.147       0.042
+ leave-sector-out     PU-RF                      PU-RF, mu-sigma threshold (no fallback)       auc_pu -0.002 -0.011  0.010       0.638
+ leave-sector-out     PU-RF                      PU-RF, mu-sigma threshold (no fallback)      lee_liu -0.035 -0.180  0.100       0.715
+ leave-sector-out     PU-RF                      PU-RF, mu-sigma threshold (no fallback) recall_top10  0.022  0.001  0.051       0.022
+ leave-sector-out     PU-RF                             PU-RF, 10th-percentile threshold       auc_pu  0.007 -0.014  0.028       0.214
+ leave-sector-out     PU-RF                             PU-RF, 10th-percentile threshold      lee_liu -0.045 -0.318  0.170       0.631
+ leave-sector-out     PU-RF                             PU-RF, 10th-percentile threshold recall_top10  0.050  0.009  0.079       0.011
+ leave-sector-out     PU-RF                                           PU-RF without ksat       auc_pu  0.022  0.002  0.034       0.015
+ leave-sector-out     PU-RF                                           PU-RF without ksat      lee_liu  0.014 -0.062  0.074       0.312
+ leave-sector-out     PU-RF                                           PU-RF without ksat recall_top10  0.052  0.019  0.078       0.003
+ leave-sector-out     PU-RF                                                   PU-XGBoost       auc_pu -0.003 -0.012  0.009       0.736
+ leave-sector-out     PU-RF                                                   PU-XGBoost      lee_liu -0.046 -0.098  0.002       0.972
+ leave-sector-out     PU-RF                                                   PU-XGBoost recall_top10  0.009 -0.016  0.040       0.200
+ leave-sector-out     PU-RF                                                 PU-SVM (RBF)       auc_pu  0.014 -0.005  0.027       0.067
+ leave-sector-out     PU-RF                                                 PU-SVM (RBF)      lee_liu -0.040 -0.110  0.153       0.717
+ leave-sector-out     PU-RF                                                 PU-SVM (RBF) recall_top10  0.069  0.005  0.105       0.021
+ leave-sector-out     PU-RF                                              Elkan-Noto (RF)       auc_pu  0.065  0.002  0.109       0.016
+ leave-sector-out     PU-RF                                              Elkan-Noto (RF)      lee_liu  1.036  0.541  1.320       0.000
+ leave-sector-out     PU-RF                                              Elkan-Noto (RF) recall_top10  0.094 -0.001  0.142       0.026
+ leave-sector-out     PU-RF                                              PU bagging (RF)       auc_pu  0.033 -0.024  0.075       0.151
+ leave-sector-out     PU-RF                                              PU bagging (RF)      lee_liu  0.662 -0.016  0.987       0.030
+ leave-sector-out     PU-RF                                              PU bagging (RF) recall_top10  0.072 -0.046  0.128       0.167
+ leave-sector-out     PU-RF                                                One-class SVM       auc_pu  0.020 -0.068  0.078       0.376
+ leave-sector-out     PU-RF                                                One-class SVM      lee_liu  0.030 -0.507  0.341       0.480
+ leave-sector-out     PU-RF                                                One-class SVM recall_top10  0.022 -0.150  0.111       0.436
+ leave-sector-out     PU-RF                        MaxEnt-type presence-background model       auc_pu  0.048  0.010  0.073       0.006
+ leave-sector-out     PU-RF                        MaxEnt-type presence-background model      lee_liu  0.216 -0.057  0.511       0.049
+ leave-sector-out     PU-RF                        MaxEnt-type presence-background model recall_top10  0.089 -0.012  0.139       0.042
+protocol        5-fold spatial CV  leave-sector-out
+perm_ksat                  0.0191            0.0061
+perm_slope                 0.0103            0.0188
+perm_distance              0.0391            0.0397
+perm_elevation             0.0663            0.0243
+perm_hand                  0.0870            0.0847
+perm_twi                   0.0269            0.0119
+gini_ksat                  0.0893            0.0864
+gini_slope                 0.0866            0.0811
+gini_distance              0.1810            0.1775
+gini_elevation             0.2195            0.2218
+gini_hand                  0.3078            0.3147
+gini_twi                   0.1159            0.1184
+                                                                   accuracy  ...  kappa
+                                                                       mean  ...    std
+design                                            model                      ...       
+nested (labels derived within each training fold) CART                0.886  ...  0.093
+                                                  Minimum Distance    0.807  ...  0.094
+                                                  Random Forest       0.929  ...  0.047
+paper (labels derived once on D*)                 CART                0.907  ...  0.040
+                                                  Minimum Distance    0.830  ...  0.110
+                                                  Random Forest       0.941  ...  0.017
+
+[6 rows x 12 columns]

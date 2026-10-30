@@ -1,0 +1,12 @@
+Quantity,Value
+"Spearman correlation, FSIVI vs RF probability",0.793
+ROC-AUC of FSIVI for RF-predicted flood-prone samples (p >= 0.5),0.923
+FSIVI vs RF quartile classes: quadratic-weighted kappa,0.751
+FSIVI vs RF quartile classes: agreement within one class,0.954
+FSIVI vs RF quintile classes: quadratic-weighted kappa,0.772
+FSIVI vs RF quintile classes: agreement within one class,0.894
+"Spearman correlation, importance-weighted vs equal-weighted FSIVI",0.981
+"Spearman correlation under 1,000 random perturbations of the weights: median",0.984
+"Spearman correlation under 1,000 random perturbations of the weights: minimum",0.901
+ROC-AUC against the original sector labels (labeled vs unlabeled): FSIVI,0.762
+ROC-AUC against the original sector labels (labeled vs unlabeled): RF out-of-fold,0.792

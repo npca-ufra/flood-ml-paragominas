@@ -1,8 +1,9 @@
 # flood-ml-paragominas
 
-Code and processed data supporting the manuscript *"Geospatial machine-learning
-framework for urban flood susceptibility mapping: a semi-supervised approach
-applied to Paragominas, Brazilian Amazon"* (prepared for submission to *Natural Hazards*).
+Code and processed data supporting the manuscript *"A reproducible positive-and-unlabeled
+learning framework for urban flood-susceptibility mapping without verified non-flood labels:
+application to Paragominas, Brazilian Amazon"* (submitted to *Environmental Modelling &
+Software*; first revision).
 
 The framework maps urban flood-prone areas in Paragominas (Pará State, Brazilian
 Amazon) using open geospatial data and machine learning in Google Earth Engine
@@ -24,6 +25,9 @@ flood-ml-paragominas/
 │   ├── 4_SpatialPostProcessing.js                  # Urban masking and hotspot filtering (GEE)
 │   ├── 5.1_PostProcessingVisualization.js          # FSIVI computation and final visualization (GEE)
 │   ├── 5.2_SeparabilityAnalysis.ipynb              # Separability analysis and PCA projections (Python/Colab)
+│   ├── 3.4_SpyThreshold_Sensitivity.ipynb          # Spy threshold, spy fraction and seed sensitivity (revision)
+│   ├── 6_RevisionAnalyses/                          # Offline benchmark and analyses added in the revision (see its README)
+│   ├── 7_Figures/                                   # Scripts that draw the figures of the revised manuscript (see its README)
 │   └── files/                                       # Processed datasets and classified rasters (see DATA.md)
 ├── DATA.md
 ├── LICENSE
@@ -43,6 +47,9 @@ per-file description and the Zenodo location.
 - **Python 3** with `pandas`, `numpy`, `scikit-learn` (>= 1.6, required for
   `NearestCentroid.predict_proba` in the cross-validation notebook), `scipy`, `seaborn`,
   `matplotlib` (for the `.ipynb` notebooks, e.g. in Google Colab).
+- For `scripts/6_RevisionAnalyses/` and `scripts/7_Figures/`: `xgboost`, `geopandas`,
+  `rasterio`, `contextily` and `pillow`, plus a LaTeX installation with TikZ for the three
+  diagrams (`pdflatex`). The large Zenodo files listed in `DATA.md` go in `scripts/files/`.
 
 ## Notes
 
