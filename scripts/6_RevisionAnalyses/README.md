@@ -24,7 +24,7 @@ The outputs used in the revised manuscript and in the response to the reviewers 
 | `autocorrelation.py` | Correlogram of residuals and predictors | Sect. 3.4.3 |
 
 ```
-pip install scikit-learn xgboost geopandas rasterio scipy seaborn
+pip install -r requirements.txt   # versions used for the revision (scikit-learn 1.6.1, XGBoost 2.1.4)
 python revision_analyses.py   # ~20 min, writes results/ (benchmark, nested Table 2, importance)
 python matched_area.py        # equal predicted area and maximum Lee-Liu (uses results/06)
 python contamination.py       # expected label contamination
