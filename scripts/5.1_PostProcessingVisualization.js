@@ -9,7 +9,7 @@
  *  2) Export of samples for the separability analysis (Python)
  *  3) FSIVI index (susceptibility map weighted by variable importance),
  *     descriptive statistics and histogram
- *  4) Two-tier susceptibility classes - Table 6
+ *  4) Two-tier susceptibility classes - Table 7
  *  5) Attention zones, animation (GIF) and exports
  *
  * REQUIRED IMPORTS:
@@ -137,7 +137,7 @@ var fsivi = normalized.expression(
     wTw: ee.Number(weights.get('twi'))
   }).rename('suscetibilidade_inundacao');
 
-// 3x3 mean smoothing (morphological mean filter, Fig. 17)
+// 3x3 mean smoothing (morphological mean filter, Fig. 18)
 fsivi = fsivi.focal_mean({radius: 1, units: 'pixels', kernel: ee.Kernel.square(1)});
 
 // FSIVI restricted to the area classified as flood-prone by the PU model
@@ -207,7 +207,7 @@ print('Table 4 - area-level metrics', table4);
 
 
 // ==================================================================
-// 4) TABLE 6 - TWO-TIER SUSCEPTIBILITY CLASSES
+// 4) TABLE 7 - TWO-TIER SUSCEPTIBILITY CLASSES
 //    Very high = PU flood-prone area; other classes = FSIVI natural breaks (Jenks)
 // ==================================================================
 var outsidePU = fsivi.updateMask(imgPU.mask().unmask(0).not());
@@ -218,12 +218,12 @@ var fsiviClasses = [
   {name: 'High (>=0.75)',          img: outsidePU.gte(0.7450).selfMask()},
   {name: 'Very high (PU flood-prone area)', img: fsiviPU}
 ];
-var table6 = ee.FeatureCollection(fsiviClasses.map(function (c) {
+var table7 = ee.FeatureCollection(fsiviClasses.map(function (c) {
   var a = areaHa(c.img);
   return ee.Feature(null, {class_name: c.name, area_ha: a,
                            pct_analysed_urban_area: a.divide(fsiviDomainArea).multiply(100)});
 }));
-print('Table 6 - susceptibility classes', table6);
+print('Table 7 - susceptibility classes', table7);
 print('PU pixels with FSIVI >= 0.745 (%):',
       areaHa(fsiviPU.gte(0.7450).selfMask()).divide(areaHa(fsiviPU)).multiply(100));
 
@@ -284,7 +284,7 @@ print('Number of separability samples:', separabilitySamples.size());
 // ==================================================================
 Export.table.toDrive({collection: table4, description: 'Table4_area_metrics',
                       folder: FOLDER, fileFormat: 'CSV'});
-Export.table.toDrive({collection: table6, description: 'Table6_susceptibility_classes',
+Export.table.toDrive({collection: table7, description: 'Table7_susceptibility_classes',
                       folder: FOLDER, fileFormat: 'CSV'});
 Export.table.toDrive({collection: separabilitySamples, description: 'dadosAvaliacaoSeparabilidade',
                       folder: FOLDER});
@@ -319,7 +319,7 @@ methods.forEach(function (m) {
 });
 Map.addLayer(fsivi,      visFSIVI, '5) FSIVI', false);
 Map.addLayer(fsiviPU,    visFSIVI, '6) FSIVI over the PU flood-prone area', false);
-Map.addLayer(classesImg, {min: 1, max: 5, palette: paletteClasses}, '7) Susceptibility classes (Table 6)', false);
+Map.addLayer(classesImg, {min: 1, max: 5, palette: paletteClasses}, '7) Susceptibility classes (Table 7)', false);
 Map.addLayer(zonesPU.randomVisualizer(), {}, '8) Attention zones (PU components)', false);
 Map.addLayer(highlightRegions.style({color: '000000', fillColor: '00000000', width: 2}), {}, '9) Highlighted regions', false);
 Map.addLayer(floodSectors.style({color: '0000FF', fillColor: '00000000', width: 2}), {}, '10) CPRM/SGB sector outlines');

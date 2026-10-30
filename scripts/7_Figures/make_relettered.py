@@ -2,7 +2,7 @@
 curves), which the offline reproduction does not recreate exactly. Their plotting areas are therefore kept as
 the original pixels and only the lettering (ticks, axis labels, legends) is redrawn as vector text at print size.
 
-Fig. 11: the higher-resolution export of the same plot in the canonical figures folder (4200 x 3600 px, same
+Fig. 11: the higher-resolution export of the same plot as `inputs/Fig11_original_run.png` (a higher-resolution export of the same plot) (4200 x 3600 px, same
 folds and counts) assigns the tab10 colors in lexicographic fold order (1, 10, 2, ...), while the submitted
 figure assigns them in numeric order; its points are recolored to the submitted colors before use.
 Fig. 12: the submitted PNG (5400 x 1800 px); the legend boxes, drawn inside the plotting areas, are replaced by

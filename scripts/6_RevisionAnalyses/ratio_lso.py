@@ -1,5 +1,5 @@
 """Out-of-sample counterpart of map_level.py: leave-sector-out recall and Lee-Liu criterion of the
-random-negative Random Forest for each negative-to-positive ratio (ten random draws, scores averaged),
+random-negative Random Forest for each positive-to-negative ratio (ten random draws, scores averaged),
 to compare with the in-sample map-level agreement of the same models, with paired sector-bootstrap
 differences with respect to the nested PU-RF of revision_analyses.py (results/06)."""
 import numpy as np

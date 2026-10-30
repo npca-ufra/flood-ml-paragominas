@@ -1,6 +1,6 @@
 // =============================================================================
 // Crossing with urban area (class 24) and post-processing for 3 outputs:
-// 1) RF (semi-supervised)   2) K-means (unsupervised)   3) HAND (5m,4m,3m)
+// 1) RF (semi-supervised)   2) X-Means (unsupervised)   3) HAND (5m,4m,3m)
 // =============================================================================
 
 var spatialData = ee.Image('.../assets/ProjetoEnchente/raster_dados_espaciais_inundacao')
@@ -17,9 +17,7 @@ var landCover = spatialData.select('usocobersolo_classification_2023')
 var uniqueClassValuesYears = ee.List([24]) //urban area class (24)
 var landCoverMask = landCover.remap(uniqueClassValuesYears, uniqueClassValuesYears)
 landCoverMask = landCover.updateMask(landCoverMask)
-//Map.addLayer(landCoverMask,{},'Land use and land cover mask',false)
 landCoverMask = landCoverMask.gt(0).selfMask().unmask(0).rename('classification')
-//Map.addLayer(landCoverMask,{},"Land use and cover mask",false)
 
 // ---- Crossing the supervised classification (RF) with the urban mask ----
 var classifiedImgLandCover = classifiedImageRF.add(landCoverMask)
@@ -27,7 +25,7 @@ classifiedImgLandCover = classifiedImgLandCover.gte(2).selfMask()
 Map.addLayer(classifiedImgLandCover,{bands: ["classification"],opacity: 1, palette: ["ff1f12"]},'Classified img crossed with LandCover',false)
 //------
 
-// ---- Crossing the clustering (K-means) with the urban mask ----
+// ---- Crossing the clustering (X-Means) with the urban mask ----
 // Function to get the cluster ID corresponding to the reference point
 var getClusterId = function(clusterizedImage,point) {
     var ID = clusterizedImage.reduceRegion({
@@ -39,7 +37,6 @@ var getClusterId = function(clusterizedImage,point) {
     return ee.Number.parse(ID);
 }
 var riskClusterId = getClusterId(clusteredImageKmeans,point_Cluster);
-//print("riskClusterId",riskClusterId)
 landCoverMask = landCoverMask.rename('cluster')
 var clusteredImageLandCover = clusteredImageKmeans.eq(riskClusterId.getInfo()).add(landCoverMask)
 clusteredImageLandCover = clusteredImageLandCover.gte(2).selfMask()
@@ -48,9 +45,7 @@ Map.addLayer(clusteredImageLandCover,{bands: ["cluster"],opacity: 1, palette: ["
 
 // ---- Crossing the HAND classification (5 m) with the urban mask ----
 var classifiedImageHAND_smooth_5m = classifiedImageSlicedHAND_5m.gte(-9999).clip(region)
-//Map.addLayer(classifiedImageHAND_smooth)
 var classifiedImgHAND_LandCover_5m = classifiedImageHAND_smooth_5m.add(landCoverMask).gte(2).selfMask()
-//classifiedImgHAND_LandCover = classifiedImgHAND_LandCover_5m.gte(2).selfMask()
 Map.addLayer(classifiedImgHAND_LandCover_5m,{bands: ["classification_hand"],opacity: 1, palette: ["ff1f12"]},'Classified HAND img 5m crossed with LandCover',false)
 // ---- Crossing the HAND classification (4 m) with the urban mask ----
 var classifiedImageHAND_smooth_4m = classifiedImageSlicedHAND_4m.gte(-9999).clip(region)
@@ -87,7 +82,7 @@ function hotspotsByArea(binaryImg, layerLabelPrefix, minArea_m2, eightConnected,
   var areaMask = area.gte(minArea_m2);
   var hotspots = labeled.updateMask(areaMask);
 
-  // 5) Visualizations (same style as your original code)
+  // 5) Visualizations (same style as the original analysis)
   Map.addLayer(labeled.randomVisualizer(), {}, layerLabelPrefix + ' - Objects', false);
   Map.addLayer(nPixels, { min: 1, max: _max }, layerLabelPrefix + ' - Number of pixels', false);
   Map.addLayer(area, { min: 0, max: 3e6, palette: ['0000FF', 'FF00FF'] }, layerLabelPrefix + ' - Area (m2)', false);
@@ -97,10 +92,10 @@ function hotspotsByArea(binaryImg, layerLabelPrefix, minArea_m2, eightConnected,
 }
 
 // =============================================================================
-// Apply the function to the three images (RF, K-means, HAND <= 5 m)
+// Apply the function to the three images (RF, X-Means, HAND <= 5 m)
 // =============================================================================
 
-// Area threshold: 3,000 m2 | connectivity 4 (as in your snippet) | maxSize 1024
+// Area threshold: 3,000 m2 | connectivity 4 (as in the original analysis) | maxSize 1024
 var AREA_MIN_M2 = 3000;
 var EIGHT_CON = false;
 var MAXSIZE = 1024;
@@ -114,10 +109,10 @@ var img_ClassifiedRF_HotSpot = hotspotsByArea(
   MAXSIZE
 );
 
-// 2) Clustered Image (K-means) AND Urban
+// 2) Clustered Image (X-Means) AND Urban
 var img_ClassifiedKMeans_HotSpot = hotspotsByArea(
   clusteredImageLandCover,       // binary selfMask image
-  'Clustered (K-means) - Hotspots',
+  'Clustered (X-Means) - Hotspots',
   AREA_MIN_M2,
   EIGHT_CON,
   MAXSIZE

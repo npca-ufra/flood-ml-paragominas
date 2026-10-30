@@ -1,4 +1,4 @@
-"""Spatial autocorrelation range versus the block design (Reviewer 3, comment 4).
+"""Spatial autocorrelation range versus the block design (Sect. 3.4.3). The correlogram is computed on a random subset of 5,000 points.
 
 Empirical correlogram (Pearson correlation between pairs of standardized values, per 50 m distance
 bin) of the out-of-fold residuals of the PU Random Forest (original sector label minus out-of-fold

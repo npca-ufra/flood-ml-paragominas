@@ -102,6 +102,7 @@ var mapbiomasVis = {
 
 // Load the MapBiomas collection and select the final year
 var MapBiomas_collection = ee.Image(
+  // exploratory display only: the predictor stack of 2.2 uses MapBiomas Sentinel-2 collection 2 (2023)
   'projects/mapbiomas-public/assets/brazil/lulc/collection_S2_beta/collection_LULC_S2_beta'
 ).clip(geometry);
 

@@ -14,17 +14,19 @@ The outputs used in the revised manuscript and in the response to the reviewers 
 | `sector_level.py` | Sector-bootstrap interval of the holdout recall and recall per withheld sector (run after `revision_analyses.py`) | Sects. 4.3 and 4.4, Table S7 |
 | `make_tables.py` | LaTeX rows of Table 5 and Tables S3–S6 from `results/` | – |
 | `map_level.py` | Maps of the Random Forest trained with PU labels and with random pseudo-negatives at several ratios, applied to the predictor stack (needs `spatial_data_raster_flood.tif` from Zenodo in `../files/`), with the post-processing of the paper | Sect. 4.4, Table S6 |
-| `ratio_lso.py` | Leave-sector-out evaluation of the same random-negative ratios | Sect. 4.4, Fig. 17, Table S6 |
-| `pu_map_stability.py` | Stability of the PU map across spy seeds (run after `map_level.py`) | Sect. 4.4, Table S6 |
-| `ratio_figures.py` | Fig. 17 and Fig. S10 (run after the three scripts above and `revision_analyses.py`) | Fig. 17, Fig. S10 |
+| `ratio_lso.py` | Leave-sector-out evaluation of the same random-negative ratios (run after `revision_analyses.py`) | Sect. 4.4, Fig. 17, Table S6 |
+| `pu_map_stability.py` | Stability of the PU map across spy seeds (run after `map_level.py`; needs the Zenodo predictor stack) | Sect. 4.4, Table S6 |
+| `ratio_figures.py` | Fig. 17 and Fig. S10, written to `figures/ratio_effect_summary.pdf` and `figures/ratio_effect_maps.pdf` (run after the three scripts above and `revision_analyses.py`; needs the Zenodo predictor stack) | Fig. 17, Fig. S10 |
 | `matched_area.py` | Benchmark at an equal predicted area and maximum Lee–Liu (run after `revision_analyses.py`) | Table 5, Table S3 |
 | `contamination.py` | Expected contamination of the Spy labels (Elkan–Noto label frequency) | Sect. 4.1 |
 | `silhouette_check.py` | Silhouette of the K-Means stratification for k = 2–15 | Sect. 3.4.1 |
 | `pu_xmeans_overlap.py` | Share of the PU flood-prone area also classified by X-Means, from the published classification rasters in `../files/` | Sect. 4.3, Fig. 15 |
 | `autocorrelation.py` | Correlogram of residuals and predictors | Sect. 3.4.3 |
+| `../3.4_SpyThreshold_Sensitivity.ipynb` | Spy sensitivity (Table S1), cross-check of Table S2, distances of the spatial folds, ROC-AUC under the threshold rules; runs in Colab from the GitHub files | Sects. 3.4.3 and 4.1, Tables S1-S2 |
 
 ```
 pip install -r requirements.txt   # versions used for the revision (scikit-learn 1.6.1, XGBoost 2.1.4)
+python common.py              # self-test (prints "ok")
 python revision_analyses.py   # ~20 min, writes results/ (benchmark, nested Table 2, importance)
 python matched_area.py        # equal predicted area and maximum Lee-Liu (uses results/06)
 python contamination.py       # expected label contamination
@@ -44,3 +46,12 @@ python make_tables.py         # LaTeX rows of Table 5 and Tables S3-S6
 All metrics are computed against the original labels (1 = inside a CPRM/SGB flood sector, 0 = unlabeled).
 Leave-sector-out assigns each sample to the nearest of the 18 sectors containing positives; confidence
 intervals come from 1,000 bootstrap resamples of the spatial groups.
+
+## Outputs
+
+Table 5 = `results/table_benchmark_main.tex`; Tables S3-S7 = `results/table_S3.tex` ... `table_S7.tex`;
+Table S1 = `results/table_S1_spy_sensitivity.csv` (notebook 3.4); Table S2 = `results/08_table_S2_fsivi.csv`
+(`table_S2_fsivi_agreement.csv` is the rounded cross-check written by notebook 3.4); nested Table 2 =
+`results/07_table2_nested_vs_paper.csv`; Fig. 17 = `figures/ratio_effect_summary.pdf`; Fig. S10 =
+`figures/ratio_effect_maps.pdf`. The other `results/*.csv` files are the numbers quoted in Sects. 3.4-4.6 and in
+the Supplementary Material (file names start with the order in which the scripts write them).

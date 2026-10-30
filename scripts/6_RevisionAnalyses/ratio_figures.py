@@ -1,4 +1,4 @@
-"""Figures for the map-level effect of the negative-to-positive ratio (results of map_level.py and
+"""Figures for the map-level effect of the positive-to-negative ratio (results of map_level.py and
 ratio_lso.py): (a) summary curves; (b) maps of the PU model and of random-negative models."""
 import matplotlib
 matplotlib.use("Agg")
@@ -7,7 +7,6 @@ import matplotlib._mathtext as mathtext
 mathtext.SHRINK_FACTOR = 0.8  # sub/superscripts at 80% (default 70%) so that they stay >= 6 pt in print
 import numpy as np
 import pandas as pd
-import rasterio
 
 import map_level as ml
 from common import FEATS, results_dir, rf

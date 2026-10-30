@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 
 import map_level as ml  # reuses the raster stack, post-processing and metrics
-from common import FEATS, load, protocol_5fold, pu_training_set, results_dir, rf
+from common import pu_training_set, results_dir, rf
 
 OUT = results_dir("results")
 maps, rows = [], []

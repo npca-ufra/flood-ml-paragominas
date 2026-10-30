@@ -1,11 +1,13 @@
-"""Builds the LaTeX rows of the benchmark tables (main-text Table 5 and Table S3) from results/."""
+"""Builds the LaTeX rows of Table 5 and Tables S3-S6 from results/ (paths relative to this script)."""
 import pandas as pd
 
-from common import DATA
+from common import DATA, results_dir
 
-s = pd.read_csv("results/01_metrics_summary.csv")
-eq = pd.read_csv("results/11_equal_predicted_area.csv").set_index(["protocol", "method"])
-rs = pd.read_csv("results/05_recall_per_held_out_sector.csv", index_col=0)
+OUT = results_dir("results")
+
+s = pd.read_csv(OUT / "01_metrics_summary.csv")
+eq = pd.read_csv(OUT / "11_equal_predicted_area.csv").set_index(["protocol", "method"])
+rs = pd.read_csv(OUT / "05_recall_per_held_out_sector.csv", index_col=0)
 lt50 = (rs < 0.5).sum()
 MAIN = {"PU-RF": "PU-RF (proposed)",
         "RF + random negatives (1:1)": "RF + random negatives (1:1)",
@@ -41,12 +43,12 @@ for prot, title in TITLE.items():
     full.append("\\multicolumn{8}{l}{\\textit{" + title + "}}\\\\")
     full += [f"{v} & {ci(P.loc[k], 'auc_pu', '{:.3f}')} & {ci(P.loc[k], 'recall')} & {P.loc[k].pred_pos_rate:.2f} & "
              f"{ci(P.loc[k], 'lee_liu')} & {eqcols(prot, k)} & {ci(P.loc[k], 'recall_top10')} \\\\" for k, v in FULL.items() if k in P.index]
-open("results/table_benchmark_main.tex", "w").write("\n".join(main) + "\n")
-open("results/table_S3.tex", "w").write("\n".join(full) + "\n")
+(OUT / "table_benchmark_main.tex").write_text("\n".join(main) + "\n")
+(OUT / "table_S3.tex").write_text("\n".join(full) + "\n")
 print("\n".join(main))
 
 # Table S4: Table 2 metrics, paper design vs nested design (offline reproduction)
-n = pd.read_csv("results/07_table2_nested_vs_paper.csv", header=[0, 1], index_col=[0, 1])
+n = pd.read_csv(OUT / "07_table2_nested_vs_paper.csv", header=[0, 1], index_col=[0, 1])
 s4 = []
 for design, title in [("paper (labels derived once on D*)", "Labels derived once on $D^{*}$ (design of Table~2)"),
                       ("nested (labels derived within each training fold)", "Nested: labels derived within each training fold")]:
@@ -55,23 +57,23 @@ for design, title in [("paper (labels derived once on D*)", "Labels derived once
         r = n.loc[(design, model)]
         s4.append(model + " & " + " & ".join(f"{r[(m, 'mean')]:.3f} ({r[(m, 'std')]:.3f})"
                                               for m in ["accuracy", "precision", "recall", "f1", "roc_auc", "kappa"]) + " \\\\")
-open("results/table_S4.tex", "w").write("\n".join(s4) + "\n")
+(OUT / "table_S4.tex").write_text("\n".join(s4) + "\n")
 
 # Table S5: importance (mean over folds); Gini of this reproduction and GEE weights of Table 3
-imp = pd.read_csv("results/04_importance_per_fold.csv").groupby("protocol").mean(numeric_only=True)
+imp = pd.read_csv(OUT / "04_importance_per_fold.csv").groupby("protocol").mean(numeric_only=True)
 gee = pd.read_csv(DATA / "feature_importance_flood.csv")[["ksat", "slope", "distance", "elevation", "hand", "twi"]].iloc[0]
 gee = gee / gee.sum()
 lab = {"ksat": "$k_{sat}$", "slope": "Slope", "distance": "Distance to drainage", "elevation": "Elevation", "hand": "HAND", "twi": "TWI"}
 s5 = [f"{lab[f]} & {gee[f]:.3f} & {imp.loc['5-fold spatial CV', 'gini_' + f]:.3f} & {imp.loc['leave-sector-out', 'gini_' + f]:.3f} & "
       f"{imp.loc['5-fold spatial CV', 'perm_' + f]:.3f} & {imp.loc['leave-sector-out', 'perm_' + f]:.3f} \\\\" for f in lab]
-open("results/table_S5.tex", "w").write("\n".join(s5) + "\n")
+(OUT / "table_S5.tex").write_text("\n".join(s5) + "\n")
 print("\n".join(s4)); print("\n".join(s5))
 
 # Table S6: map-level effect of the ratio of random pseudo-negatives (map_level.py, ratio_lso.py, pu_map_stability.py)
-mp = pd.read_csv("results/15_map_level_metrics.csv")
-st = pd.read_csv("results/18_pu_map_stability.csv").assign(model="PU spy seeds")
-ag = pd.read_csv("results/16_map_level_agreement.csv").set_index("model")
-rl = pd.read_csv("results/17_ratio_leave_sector_out.csv").set_index("model")
+mp = pd.read_csv(OUT / "15_map_level_metrics.csv")
+st = pd.read_csv(OUT / "18_pu_map_stability.csv").assign(model="PU spy seeds")
+ag = pd.read_csv(OUT / "16_map_level_agreement.csv").set_index("model")
+rl = pd.read_csv(OUT / "17_ratio_leave_sector_out.csv").set_index("model")
 pu_l = L.loc["PU-RF"]
 rng = lambda x, c, f: f"{x[c].mean():{f}}" + (f" ({x[c].min():{f}}--{x[c].max():{f}})" if len(x) > 1 else "")
 def row6(label, x, jb, jp, lso):
@@ -84,5 +86,5 @@ for k, lab6 in [("1:0.5", "1:0.5"), ("1:1", "1:1"), ("1:2", "1:2"), ("1:4.7 (PU 
     jb = ag.loc[k, "jaccard_between_draws_mean"]
     s6.append(row6("Random negatives " + lab6, mp[mp.model == f"RF + random negatives {k}"],
                    "--" if pd.isna(jb) else f"{jb:.2f}", f"{ag.loc[k, 'jaccard_with_PU_mean']:.2f}", lso(rl.loc[k])))
-open("results/table_S6.tex", "w").write("\n".join(s6) + "\n")
+(OUT / "table_S6.tex").write_text("\n".join(s6) + "\n")
 print("\n".join(s6))

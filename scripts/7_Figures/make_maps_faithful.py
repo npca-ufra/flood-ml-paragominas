@@ -2,6 +2,7 @@
 originals. Fig. 1: the main panel of the original location map (study area only, as the journal's policy on
 location maps asks), with an Esri World Imagery basemap instead of Google Satellite.
 Outputs are PDF with vector text and lines; the basemaps are raster, embedded at 600 dpi."""
+import sys
 from pathlib import Path
 
 import contextily as cx
@@ -35,7 +36,6 @@ def dms(v, hemi):
     return f"{d}°{m:.1f}′{hemi}"
 
 
-import os
 import geopandas as gpd
 from matplotlib.patches import ConnectionPatch, Patch
 
@@ -101,80 +101,78 @@ def fig1_main(ax, legend=True, info="EPSG: 4326 WGS84\nImagery: Esri World Image
         ax.text(lx0 + 0.11 * w_deg, ly0 + 0.033 * h_deg, "Study area", fontsize=6.5, va="center", zorder=6)
 
 
-if not os.environ.get('SKIP_FIG1'):
-    # study area only (the journal's map policy: no location map larger than the study area)
-    pw = 3.25                                             # map width (in); EPSG:4326 drawn with equal degrees, as in QGIS
-    ph = pw * h_deg / w_deg
-    mx, my = 0.36, 0.27
-    fig = plt.figure(figsize=(pw + 2 * mx, ph + 2 * my))
-    fig1_main(fig.add_axes([mx / (pw + 2 * mx), my / (ph + 2 * my), pw / (pw + 2 * mx), ph / (ph + 2 * my)]))
-    fig.savefig(OUT / "Fig1_area.pdf", dpi=600)                 # alternative, if the editor asks
-    plt.close(fig)
-    print("Fig1", round(pw + 2 * mx, 2), "x", round(ph + 2 * my, 2), "in")
+# study area only (the journal's map policy: no location map larger than the study area)
+pw = 3.25                                             # map width (in); EPSG:4326 drawn with equal degrees, as in QGIS
+ph = pw * h_deg / w_deg
+mx, my = 0.36, 0.27
+fig = plt.figure(figsize=(pw + 2 * mx, ph + 2 * my))
+fig1_main(fig.add_axes([mx / (pw + 2 * mx), my / (ph + 2 * my), pw / (pw + 2 * mx), ph / (ph + 2 * my)]))
+fig.savefig(OUT / "Fig1_area.pdf", dpi=600)                 # alternative, if the editor asks
+plt.close(fig)
+print("Fig1", round(pw + 2 * mx, 2), "x", round(ph + 2 * my, 2), "in")
 
-    # locator version (Brazil -> Para -> Paragominas -> study area), as in the submitted figure. It shows a larger
-    # area than the study area, which the journal's map policy discourages; the authors chose it, and Fig1_area.pdf
-    # is ready if the editor asks for the change
-    IBGE = HERE / "inputs" / "ibge"                        # IBGE territorial mesh (servicodados.ibge.gov.br/api/v3/malhas)
-    br, uf, mun = (gpd.read_file(IBGE / f) for f in ("br.geojson", "br_uf.geojson", "pa_mun.geojson"))
-    pa, pgm = uf[uf.codarea == "15"], mun[mun.codarea == "1505502"]
-    GREY, ORANGE, BLUE, YEL = "#d9d9d9", "#E69F00", "#0072B2", "#ffd700"   # Okabe-Ito, colour-blind safe
-    TW, H = 4.79, 4.45
-    mh = H - 0.42; mw = mh * w_deg / h_deg; ml = TW - 0.22 - mw
-    fig = plt.figure(figsize=(TW, H))
-    axm = fig.add_axes([ml / TW, 0.21 / H, mw / TW, mh / H])
-    fig1_main(axm, legend=False, info="EPSG: 4326 WGS84\nImagery: Esri World Imagery\nBoundaries: IBGE")
+# locator version (Brazil -> Para -> Paragominas -> study area), as in the submitted figure. It shows a larger
+# area than the study area, which the journal's map policy discourages; Fig1_area.pdf
+# is the alternative if the editor asks for the change
+IBGE = HERE / "inputs" / "ibge"                        # IBGE territorial mesh (servicodados.ibge.gov.br/api/v3/malhas)
+br, uf, mun = (gpd.read_file(IBGE / f) for f in ("br.geojson", "br_uf.geojson", "pa_mun.geojson"))
+pa, pgm = uf[uf.codarea == "15"], mun[mun.codarea == "1505502"]
+GREY, ORANGE, BLUE, YEL = "#d9d9d9", "#E69F00", "#0072B2", "#ffd700"   # Okabe-Ito, colour-blind safe
+TW, H = 4.79, 4.45
+mh = H - 0.42; mw = mh * w_deg / h_deg; ml = TW - 0.22 - mw
+fig = plt.figure(figsize=(TW, H))
+axm = fig.add_axes([ml / TW, 0.21 / H, mw / TW, mh / H])
+fig1_main(axm, legend=False, info="EPSG: 4326 WGS84\nImagery: Esri World Imagery\nBoundaries: IBGE")
 
-    def inset(top, h, bounds, ticks_x, ticks_y, letter):
-        x0, y0, x1, y1 = bounds
-        aspect = 1 / np.cos(np.radians((y0 + y1) / 2))
-        w = h * (x1 - x0) / ((y1 - y0) * aspect)
-        a = fig.add_axes([0.24 / TW, (H - top - h) / H, w / TW, h / H])
-        a.set_xlim(x0, x1); a.set_ylim(y0, y1); a.set_aspect(aspect)
-        a.set_xticks(ticks_x); a.set_xticklabels([f"{abs(t):g}°W" for t in ticks_x])
-        a.set_yticks(ticks_y); a.set_yticklabels([f"{abs(t):g}°{'S' if t < 0 else ('N' if t > 0 else '')}" for t in ticks_y],
-                                                  rotation=90, va="center")
-        a.tick_params(labelsize=6, length=2, width=0.4, pad=1)
-        for sp in a.spines.values():
-            sp.set_linewidth(0.6)
-        a.text(0.03, 0.97, letter, transform=a.transAxes, va="top", fontsize=7,
-               bbox=dict(boxstyle="square,pad=0.15", fc="white", ec="none"))
-        return a
+def inset(top, h, bounds, ticks_x, ticks_y, letter):
+    x0, y0, x1, y1 = bounds
+    aspect = 1 / np.cos(np.radians((y0 + y1) / 2))
+    w = h * (x1 - x0) / ((y1 - y0) * aspect)
+    a = fig.add_axes([0.24 / TW, (H - top - h) / H, w / TW, h / H])
+    a.set_xlim(x0, x1); a.set_ylim(y0, y1); a.set_aspect(aspect)
+    a.set_xticks(ticks_x); a.set_xticklabels([f"{abs(t):g}°W" for t in ticks_x])
+    a.set_yticks(ticks_y); a.set_yticklabels([f"{abs(t):g}°{'S' if t < 0 else ('N' if t > 0 else '')}" for t in ticks_y],
+                                              rotation=90, va="center")
+    a.tick_params(labelsize=6, length=2, width=0.4, pad=1)
+    for sp in a.spines.values():
+        sp.set_linewidth(0.6)
+    a.text(0.03, 0.97, letter, transform=a.transAxes, va="top", fontsize=7,
+           bbox=dict(boxstyle="square,pad=0.15", fc="white", ec="none"))
+    return a
 
-    def link(a, b, xy_a, xy_b):                           # grey zoom lines from a box in a to the frame of b
-        for p, q in zip(xy_a, xy_b):
-            fig.add_artist(ConnectionPatch(p, q, "data", "axes fraction", axesA=a, axesB=b, color="#555555", lw=0.5))
+def link(a, b, xy_a, xy_b):                           # grey zoom lines from a box in a to the frame of b
+    for p, q in zip(xy_a, xy_b):
+        fig.add_artist(ConnectionPatch(p, q, "data", "axes fraction", axesA=a, axesB=b, color="#555555", lw=0.5))
 
-    A = inset(0.05, 1.12, (-75.5, -34.5, -33.5, 6.5), [-70, -50], [-20, 0], "(A)")
-    uf.plot(ax=A, fc=GREY, ec="white", lw=0.3); pa.plot(ax=A, fc=ORANGE, ec="black", lw=0.4)
-    B = inset(1.33, 1.05, (-59.5, -10.2, -45.5, 3.0), [-55, -50], [-5, 0], "(B)")
-    mun.plot(ax=B, fc="#fbe3b3", ec="#b08a3e", lw=0.2); pa.boundary.plot(ax=B, color="black", lw=0.5)
-    pgm.plot(ax=B, fc=BLUE, ec="black", lw=0.4)
-    C = inset(2.55, 0.72, (-49.0, -3.95, -46.3, -2.3), [-48, -47], [-3], "(C)")
-    mun.plot(ax=C, fc="#f2f2f2", ec="#bdbdbd", lw=0.3); pgm.plot(ax=C, fc="#bcd9ec", ec=BLUE, lw=0.6)
-    for ec, lw in (("black", 1.8), (YEL, 0.9)):
-        C.add_patch(Rectangle(RECT[:2], RECT[2] - RECT[0], RECT[3] - RECT[1], fill=False, ec=ec, lw=lw, zorder=3))
-    x0, y0, x1, y1 = pa.total_bounds
-    A.add_patch(Rectangle((x0, y0), x1 - x0, y1 - y0, fill=False, ec="#555555", lw=0.5))
-    link(A, B, [(x0, y0), (x1, y0)], [(0, 1), (1, 1)])
-    x0, y0, x1, y1 = pgm.total_bounds
-    B.add_patch(Rectangle((x0, y0), x1 - x0, y1 - y0, fill=False, ec="#555555", lw=0.5))
-    link(B, C, [(x0, y0), (x1, y0)], [(0, 1), (1, 1)])
-    # no zoom lines from (C) to (D): they would cross (B) and (C); the yellow outline links the two panels
-    axm.text(0.02, 0.985, "(D)", transform=axm.transAxes, va="top", fontsize=7, zorder=7,
-             bbox=dict(boxstyle="square,pad=0.15", fc="white", ec="none"))
-    handles = [Patch(fc="none", ec=YEL, lw=1.2, label="Study area"), Patch(fc=BLUE, ec="black", lw=0.4, label="Paragominas\nmunicipality"),
-               Patch(fc=ORANGE, ec="black", lw=0.4, label="Pará State"), Patch(fc=GREY, ec="white", lw=0.4, label="Brazil")]
-    fig.legend(handles=handles, title="LEGEND", loc="lower left", bbox_to_anchor=(0.2 / TW, 0.2 / H), frameon=False,
-               fontsize=6.5, title_fontsize=7, alignment="left", handlelength=1.6, labelspacing=0.45)
-    fig.savefig(OUT / "Fig1.pdf", dpi=600)                      # used in the manuscript (co-authors' choice)
-    plt.close(fig)
-    print("Fig1_locator", TW, "x", H, "in")
+A = inset(0.05, 1.12, (-75.5, -34.5, -33.5, 6.5), [-70, -50], [-20, 0], "(A)")
+uf.plot(ax=A, fc=GREY, ec="white", lw=0.3); pa.plot(ax=A, fc=ORANGE, ec="black", lw=0.4)
+B = inset(1.33, 1.05, (-59.5, -10.2, -45.5, 3.0), [-55, -50], [-5, 0], "(B)")
+mun.plot(ax=B, fc="#fbe3b3", ec="#b08a3e", lw=0.2); pa.boundary.plot(ax=B, color="black", lw=0.5)
+pgm.plot(ax=B, fc=BLUE, ec="black", lw=0.4)
+C = inset(2.55, 0.72, (-49.0, -3.95, -46.3, -2.3), [-48, -47], [-3], "(C)")
+mun.plot(ax=C, fc="#f2f2f2", ec="#bdbdbd", lw=0.3); pgm.plot(ax=C, fc="#bcd9ec", ec=BLUE, lw=0.6)
+for ec, lw in (("black", 1.8), (YEL, 0.9)):
+    C.add_patch(Rectangle(RECT[:2], RECT[2] - RECT[0], RECT[3] - RECT[1], fill=False, ec=ec, lw=lw, zorder=3))
+x0, y0, x1, y1 = pa.total_bounds
+A.add_patch(Rectangle((x0, y0), x1 - x0, y1 - y0, fill=False, ec="#555555", lw=0.5))
+link(A, B, [(x0, y0), (x1, y0)], [(0, 1), (1, 1)])
+x0, y0, x1, y1 = pgm.total_bounds
+B.add_patch(Rectangle((x0, y0), x1 - x0, y1 - y0, fill=False, ec="#555555", lw=0.5))
+link(B, C, [(x0, y0), (x1, y0)], [(0, 1), (1, 1)])
+# no zoom lines from (C) to (D): they would cross (B) and (C); the yellow outline links the two panels
+axm.text(0.02, 0.985, "(D)", transform=axm.transAxes, va="top", fontsize=7, zorder=7,
+         bbox=dict(boxstyle="square,pad=0.15", fc="white", ec="none"))
+handles = [Patch(fc="none", ec=YEL, lw=1.2, label="Study area"), Patch(fc=BLUE, ec="black", lw=0.4, label="Paragominas\nmunicipality"),
+           Patch(fc=ORANGE, ec="black", lw=0.4, label="Pará State"), Patch(fc=GREY, ec="white", lw=0.4, label="Brazil")]
+fig.legend(handles=handles, title="LEGEND", loc="lower left", bbox_to_anchor=(0.2 / TW, 0.2 / H), frameon=False,
+           fontsize=6.5, title_fontsize=7, alignment="left", handlelength=1.6, labelspacing=0.45)
+fig.savefig(OUT / "Fig1.pdf", dpi=600)                      # used in the manuscript
+plt.close(fig)
+print("Fig1_locator", TW, "x", H, "in")
 
 
 
 # ------------------------------------------------------------------ helpers in Web Mercator (as the GEE map views)
-import geopandas as gpd
 import rasterio
 from pyproj import Transformer
 from matplotlib.patches import Circle
@@ -206,16 +204,18 @@ STREETS = "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Lig
 
 # ------------------------------------------------------------------ Fig. 6 (window located on the original panel B)
 sec = gpd.read_file(f"zip://{FILES / 'risk_sectorization_and_streams.zip'}!risk_sectorization/risk_sectorization_PGM.shp", encoding="latin1").to_crs(31983)
-fl = sec[sec.tipolo_g1.str.startswith("Inunda")]
+fl = sec[sec.tipolo_g1.str.startswith("Inunda")]   # CPRM/SGB process type: the 18 river-flood (Inundacao) sectors; the 3 Alagamento sectors are excluded, as in the GEE scripts
 buf = fl.buffer(200).union_all()
 B6 = merc_bounds(-47.363762, -2.986234, -47.356652, -2.981229)
 buf_m = gpd.GeoSeries([buf], crs=31983).to_crs(3857)
 sec_m = gpd.GeoSeries([fl.union_all()], crs=31983).to_crs(3857)
-# 15 m sampling grid (UTM) inside the buffer, drawn as in panel C of the original
-gx0, gy0, gx1, gy1 = gpd.GeoSeries(gpd.points_from_xy([B6[0], B6[2]], [B6[1], B6[3]]), crs=3857).to_crs(31983).total_bounds
-GX, GY = np.meshgrid(np.arange(np.floor(gx0 / 15) * 15, gx1 + 15, 15), np.arange(np.floor(gy0 / 15) * 15, gy1 + 15, 15))
-pts = gpd.GeoSeries(gpd.points_from_xy(GX.ravel(), GY.ravel()), crs=31983)
-pts = pts[pts.within(buf)].to_crs(3857)
+# sample points of the exported dataset inside the window: class 1 (flood) inside the sectors, class 0 (unlabeled)
+# in the 200 m buffer (flood_dataset.csv, read through common.load)
+sys.path.insert(0, str(HERE.parent / "6_RevisionAnalyses"))
+from common import load  # noqa: E402
+d = load()
+pts = gpd.GeoDataFrame({"classes": d.classes}, geometry=gpd.points_from_xy(d.lon, d.lat), crs=4326).to_crs(3857)
+pts = pts.cx[B6[0]:B6[2], B6[1]:B6[3]]
 pw6 = 1.53
 ph6 = pw6 * (B6[3] - B6[1]) / (B6[2] - B6[0])
 fig = plt.figure(figsize=(3 * pw6 + 2 * 0.1, ph6 + 0.2))
@@ -226,13 +226,13 @@ for k in range(3):
         buf_m.plot(ax=ax, color="black", zorder=2); sec_m.plot(ax=ax, color="white", zorder=3)
     if k == 2:
         buf_m.plot(ax=ax, color=(0, 0, 25 / 255), zorder=2); sec_m.plot(ax=ax, color="white", zorder=3)
-        inside = pts.within(sec_m.iloc[0])                 # class 1 (flood) inside the sectors, class 0 (unlabeled) in the buffer
-        ax.scatter(pts[~inside].x, pts[~inside].y, s=1.1, c=[(0, 0, 200 / 255)], lw=0, zorder=3.5)
-        ax.scatter(pts[inside].x, pts[inside].y, s=1.1, c=["red"], lw=0, zorder=3.6)
+        u, f = pts[pts.classes == 0].geometry, pts[pts.classes == 1].geometry
+        ax.scatter(u.x, u.y, s=1.1, c=[(0, 0, 200 / 255)], lw=0, zorder=3.5)
+        ax.scatter(f.x, f.y, s=1.1, c=["red"], lw=0, zorder=3.6)
     bare(ax, B6)
     fig.text((k * (pw6 + 0.1) + pw6 / 2) / (3 * pw6 + 0.2), 0.02, ["(A)", "(B)", "(C)"][k], ha="center", va="bottom", fontsize=8)
 fig.savefig(OUT / "Fig6.pdf", dpi=600); plt.close(fig)
-print("Fig6", round(3 * pw6 + 0.2, 2), "x", round(ph6 + 0.2, 2), "in;", len(pts), "grid points")
+print("Fig6", round(3 * pw6 + 0.2, 2), "x", round(ph6 + 0.2, 2), "in;", len(pts), "sample points")
 
 # ------------------------------------------------------------------ Fig. 15 (window located on the original panels)
 # window of each original panel (top-left lon/lat, m per pixel, size in px) registered on the classification rasters

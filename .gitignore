@@ -5,3 +5,6 @@ scripts/files/separability_evaluation_data.csv
 scripts/files/heat_map_flood_risk_postClassif.tif
 .DS_Store
 scripts/7_Figures/output/
+scripts/6_RevisionAnalyses/figures/
+__pycache__/
+*.pyc

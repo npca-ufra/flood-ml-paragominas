@@ -1,5 +1,4 @@
-"""Map-level effect of the labeling scheme (Reviewer 3, recommendation: how much random-negative sampling
-biases susceptibility maps). The same Random Forest is trained on D* with (i) the PU labels of the paper and
+"""Map-level effect of the labeling scheme (Sect. 4.4, Table S6). The same Random Forest is trained on D* with (i) the PU labels of the paper and
 (ii) the original positives plus pseudo-negatives drawn at random from the unlabeled samples at several
 ratios, and applied to the whole study area (predictor stack spatial_data_raster_flood.tif, Zenodo).
 All maps receive the post-processing of the paper: urban mask (MapBiomas class 24), 3x3 focal mode and a
@@ -28,7 +27,7 @@ px_ha = np.broadcast_to(((abs(T.a) * 111320 * np.cos(np.radians(lat)))[:, None] 
 valid = urban & np.isfinite(X).all(-1)
 s = gpd.read_file(f"zip://{DATA / 'risk_sectorization_and_streams.zip'}!risk_sectorization/risk_sectorization_PGM.shp",
                   encoding="latin1").to_crs(4326)
-s = s[s.tipolo_g1.str.startswith("Inunda")]
+s = s[s.tipolo_g1.str.startswith("Inunda")]   # CPRM/SGB process type: the 18 river-flood (Inundacao) sectors; the 3 Alagamento sectors are excluded, as in the GEE scripts
 ref = (rasterize(((g, 1) for g in s.geometry), out_shape=shape, transform=T) == 1) & urban
 ref_ha = px_ha[ref].sum()
 Xv = X[valid]

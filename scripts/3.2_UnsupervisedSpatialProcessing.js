@@ -33,7 +33,7 @@ var clusteredImage = spatialData.cluster(clusterer);
 Map.addLayer(
   clusteredImage.clip(region).randomVisualizer(),
   {},
-  'Clustering (KMeans)',
+  'Clustering (X-Means)',
   false
 );
 

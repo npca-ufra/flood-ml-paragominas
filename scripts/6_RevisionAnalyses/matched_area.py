@@ -1,4 +1,4 @@
-"""Comparison at an equal predicted area (Reviewer 3, comment 2): each model is evaluated with the same
+"""Comparison at an equal predicted area (Table 5 and Sect. 4.4): each model is evaluated with the same
 share of samples predicted as positive as the PU-RF (its share at the 0.5 threshold), so that recall and the
 Lee-Liu criterion no longer depend on each model's default operating point. Also reports the maximum Lee-Liu
 over all thresholds. Uses the out-of-fold predictions of revision_analyses.py."""

@@ -1,13 +1,13 @@
 """Revision analyses (ENVSOFT-D-26-02946), run offline on the exported samples.
 
-  * Random-negative ablation (Reviewer 3, comment 2 and recommendation): the same Random Forest
+  * Random-negative ablation (Sect. 4.4, Table 5): the same Random Forest
     trained on pseudo-negatives sampled at random from the unlabeled pool.
-  * Alternative PU / presence-only approaches (Reviewer 3, comment 2): Elkan-Noto, PU bagging,
+  * Alternative PU / presence-only approaches (Table 5): Elkan-Noto, PU bagging,
     one-class SVM, MaxEnt-type presence-background model.
-  * Stronger learners on the same Spy labels (Reviewer 2, comment 5): XGBoost and SVM.
-  * Threshold rules (Reviewer 3, comment 4): mu-sigma without fallback and the 10th percentile.
-  * ksat (Reviewer 2, comment 3): model without ksat and out-of-sample permutation importance.
-  * Nested labeling (Reviewer 2, comment 2; Reviewer 3, comment 3): Spy repeated inside each
+  * Stronger learners on the same Spy labels (Sect. 3.4.4, Table 5): XGBoost and SVM.
+  * Threshold rules (Table S3): mu-sigma without fallback and the 10th percentile.
+  * ksat (Sect. 5.2, Tables S3 and S5): model without ksat and out-of-sample permutation importance.
+  * Nested labeling (Sect. 4.2, Table S4): Spy repeated inside each
     training fold, and the Table 2 metrics recomputed under this nested design.
 Each method is evaluated under the paper's 5-fold spatial CV and under leave-sector-out.
 None of these analyses changes the labels, models, tables or maps of the original study.

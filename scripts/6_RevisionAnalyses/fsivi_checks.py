@@ -1,4 +1,4 @@
-"""FSIVI checks (Reviewer 2, comment 4; Reviewer 3, comment 5) at the sample points of D*.
+"""FSIVI checks (Sect. 4.6, Table S2) at the sample points of D*.
 
 Same computation as section 8 of notebook 3.4 (Table S2), with the exact importance weights read
 from feature_importance_flood.csv instead of rounded values, plus:

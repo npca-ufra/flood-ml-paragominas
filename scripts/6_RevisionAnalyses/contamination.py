@@ -1,10 +1,9 @@
-"""Expected contamination of the Spy labels (Reviewer 3, comment 4), indicative only because SCAR does not hold.
+"""Expected contamination of the Spy labels (Sect. 4.1), indicative only because SCAR does not hold.
 
 The Elkan-Noto label frequency c = P(s=1 | y=1) is estimated on D* with the same Random Forest estimator used in
 the benchmark (out-of-bag probabilities of the labeled samples). Hidden positives in the unlabeled pool:
 H = n_labeled (1 - c) / c. The share of spies below the threshold estimates the share of hidden positives that
 fall among the reliable negatives."""
-import numpy as np
 import pandas as pd
 from sklearn.ensemble import RandomForestClassifier
 

@@ -70,7 +70,8 @@ def pu_training_set(A, seed=42, rule="paper", feats=FEATS):
 
 
 def rf(seed=42):
-    """sklearn equivalent of ee.Classifier.smileRandomForest(numberOfTrees=100)."""
+    """scikit-learn counterpart of ee.Classifier.smileRandomForest(numberOfTrees=100); the two implementations differ
+    in details such as the sample used to grow each tree (Sect. 3.4.4 of the manuscript)."""
     return RandomForestClassifier(n_estimators=100, random_state=seed, n_jobs=-1)
 
 
@@ -109,7 +110,7 @@ def protocol_5fold(d):
 
 def protocol_lso(d):
     """Leave-sector-out: each sample joins its nearest CPRM/SGB sector containing positives
-    (sector + Voronoi neighbourhood); each sector is held out once."""
+    (sector + Voronoi neighborhood); each sector is held out once."""
     s = gpd.read_file(f"zip://{DATA / 'risk_sectorization_and_streams.zip'}!risk_sectorization/risk_sectorization_PGM.shp",
                       encoding="latin1").to_crs(31983)
     pts = gpd.GeoDataFrame(geometry=gpd.points_from_xy(d.lon, d.lat), crs=4326).to_crs(31983)

@@ -1,4 +1,4 @@
-"""Published FSIVI raster versus the sample-level index of Table S2 (Reviewer 3, comment 3.5).
+"""Published FSIVI raster versus the sample-level index of Table S2 (Sect. 4.6 and Supplementary Sect. 9.3).
 
 Table S2 recomputes the index at the sample points of D* with min-max normalization over the sample set,
 whereas Eq. 2 normalizes each predictor over the masked urban raster. The published FSIVI raster is sampled at

@@ -121,8 +121,6 @@ var finalYear = 2023;
 var mapbiomasPal = require('users/mapbiomas/modules:Palettes.js').get('classification9');
 var mapbiomasVis = { min: 0, max: 69, palette: mapbiomasPal, format: 'png' };
 
-//var lulcS2 = ee.Image('projects/mapbiomas-public/assets/brazil/lulc/collection_S2_beta/collection_LULC_S2_beta')
-//  .clip(geometry);
 var lulcS2 = ee.Image('projects/mapbiomas-public/assets/brazil/lulc_10m/collection2/mapbiomas_10m_collection2_integration_v1')
   .clip(geometry);
 
@@ -187,14 +185,14 @@ var dataset = spatialBands.stratifiedSample({
   classValues: [0, 1],
   classPoints: [40000, 5000],   // adjust according to coverage/area
   region: riskSectorBuffer200m,
-  scale: 15, //##
+  scale: 15,
   geometries: true
 });
 
 Map.addLayer(dataset, { color: 'blue' }, 'Sample points (pixels)', false);
 print('Number of samples:', dataset.size());
-print('Unlabeled samples (0): ',dataset.filter(ee.Filter.eq('classes',0)).size()) //##
-print('Positive flood-labeled samples (1): ',dataset.filter(ee.Filter.eq('classes',1)).size()) //##
+print('Unlabeled samples (0): ',dataset.filter(ee.Filter.eq('classes',0)).size())
+print('Positive flood-labeled samples (1): ',dataset.filter(ee.Filter.eq('classes',1)).size())
 
 
 // ------------------------------ Exports --------------------------------------
@@ -231,7 +229,6 @@ Export.image.toDrive({
   description: 'raster_dados_espaciais_inundacao',
   folder:"projetoEnchenteAssets",
   region: distRivers.geometry(0),
-  //crs: 'EPSG:4326',
   scale: 10,
   maxPixels: 1e10
 });

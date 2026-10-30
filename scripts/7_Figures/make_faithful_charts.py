@@ -21,7 +21,6 @@ import seaborn as sns
 
 HERE = Path(__file__).resolve().parent
 OUT = HERE / "output"; OUT.mkdir(exist_ok=True)
-OUT.mkdir(exist_ok=True)
 sys.path.insert(0, str(HERE.parent / "6_RevisionAnalyses"))
 from common import DATA, FEATS, load, protocol_5fold, spy_scores  # noqa: E402
 

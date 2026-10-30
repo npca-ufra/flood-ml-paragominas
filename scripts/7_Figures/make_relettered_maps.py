@@ -1,5 +1,5 @@
 """Map figures of the submitted manuscript exported from QGIS with lettering too small for print (2-4 pt).
-The map pixels are kept as published; colour bars are rebuilt from the colours sampled along the published
+The map pixels are kept as published; color bars are rebuilt from the colors sampled along the published
 bars, and all text (legends, bar labels, values, panel letters) is redrawn as vector text at 6-7 pt."""
 from pathlib import Path
 
@@ -25,16 +25,16 @@ def load(p):
     return np.asarray(Image.open(p).convert("RGB"))
 
 
-def bar_colours(img, x0, x1, y0, y1):
-    """Colours along the centre column of a published colour bar, top to bottom, without its white margin."""
+def bar_colors(img, x0, x1, y0, y1):
+    """Colours along the centre column of a published color bar, top to bottom, without its white margin."""
     col = img[y0:y1, (x0 + x1) // 2].astype(int)
     ink = np.where(np.abs(col - 255).max(1) > 12)[0]
     return col[ink.min() + 2:ink.max() - 1].astype(np.uint8)
 
 
-def colourbar(fig, rect, colours, top, bottom):
+def colorbar(fig, rect, colors, top, bottom):
     ax = fig.add_axes(rect)
-    ax.imshow(colours[:, None, :], aspect="auto", interpolation="bilinear")
+    ax.imshow(colors[:, None, :], aspect="auto", interpolation="bilinear")
     ax.set_xticks([]); ax.set_yticks([])
     for s in ax.spines.values():
         s.set_linewidth(0.3); s.set_color("#666666")
@@ -66,11 +66,11 @@ fig = plt.figure(figsize=(TW, H))
 for i, ((x0, x1, y0, y1), bar, lab, (vmax, vmin)) in enumerate(zip(panels, bars, labels, values)):
     r, c = divmod(i, 3)
     left, bottom = 0.03 + c * (S + GAP), H - 0.06 - (r + 1) * S - r * 0.1
-    map_axes(fig, [left / TW, bottom / H, S / TW, S / H], img[y0:y1, x0:x1])   # published colours (authors' choice)
+    map_axes(fig, [left / TW, bottom / H, S / TW, S / H], img[y0:y1, x0:x1])   # published colors
     xl = left + S + 0.04
     fig.text(xl / TW, (bottom + S) / H, f"({'ABCDEF'[i]})", va="top", fontsize=6.5)
     cb_h = 0.36
-    colourbar(fig, [(xl + 0.02) / TW, (bottom + 0.06) / H, 0.06 / TW, cb_h / H], bar_colours(img, *bar), vmax, vmin)
+    colorbar(fig, [(xl + 0.02) / TW, (bottom + 0.06) / H, 0.06 / TW, cb_h / H], bar_colors(img, *bar), vmax, vmin)
     fig.text(xl / TW, (bottom + 0.06 + cb_h + 0.05) / H, lab, va="bottom", fontsize=6.3, linespacing=1.1)
     if i == 0:
         fig.lines.append(plt.Line2D([xl / TW, (xl + 0.1) / TW], [(bottom + S - 0.22) / H] * 2, color=stream, lw=1.0,
@@ -139,7 +139,7 @@ fig, ax, ppt = overlay(img, TW, [(x1 + 4, x1 + 100, top + 4, top + 110) for _, x
 for i, (_, x1, top) in enumerate(frames):
     ax.text(frames[i][0] + 30, top + 30, f"({'ABCDE'[i]})", va="top", fontsize=7)   # inside the frame, top left
 ax.legend(handles=[Patch(fc=np.array((254, 215, 176)) / 255, ec="#8a6d4a", lw=0.4, label="Flood hazard\nareas"),
-                   Patch(fc=np.array((8, 48, 107)) / 255, ec="none", label="1 - Flood\nsusceptibility"),   # map colour (the QGIS legend had a lighter blue)
+                   Patch(fc=np.array((8, 48, 107)) / 255, ec="none", label="1 - Flood\nsusceptibility"),   # map color (the QGIS legend had a lighter blue)
                    Patch(fc="white", ec="black", lw=0.4, label="0 - Not classified\nas flood-prone")],
           title="LEGEND", loc="lower left", bbox_to_anchor=(45 / 5409, 1 - 3800 / 3862), frameon=False, fontsize=6.5,
           title_fontsize=6.5, alignment="left", handlelength=1.4, borderaxespad=0, labelspacing=0.5)
@@ -160,7 +160,7 @@ TWS = 5.15
 def zones_legend(fig, img, old, side, fs=6.2, vertical=True):
     """Legend sized to its content (text >= 6 pt) and never smaller than the published legend box old = (x0, x1, y0, y1)
     px, which it covers; anchored at the bottom-left (side="left") or bottom-right corner of that box. Rows: LEGEND,
-    attention-zone outline, flood-susceptibility colour bar (vertical, 0 at the top as published, or horizontal)."""
+    attention-zone outline, flood-susceptibility color bar (vertical, 0 at the top as published, or horizontal)."""
     h, w = img.shape[:2]
     ppt = w / (fig.get_figwidth() * 72)                      # image px per printed point
     x0o, x1o, y0o, y1o = old
@@ -170,7 +170,7 @@ def zones_legend(fig, img, old, side, fs=6.2, vertical=True):
     tw = max(width("Flood susceptibility"), 13 + width("Attention zones")) + 2
     lh, pad = fs * 1.3, 4
     yz, yf = pad + 1.2 * lh, pad + 2.4 * lh                  # zone row (top), flood-susceptibility row (top)
-    yb = yf + 1.15 * lh                                      # colour bar top
+    yb = yf + 1.15 * lh                                      # color bar top
     bh = 2.3 * lh if vertical else 4.5
     H = max(yb + bh + (0.5 * fs if vertical else 1 + fs) + pad, (y1o - y0o) / ppt)
     W = max(tw + 2 * pad, (x1o - x0o) / ppt)
@@ -285,11 +285,11 @@ print("Fig. 3 done")
 
 # ---------------- Fig. 18 (submitted Fig. 17): FSIVI map, coordinate labels redrawn ----------------
 img = load(SUBM / "Fig17.jpeg").copy()
-# the published red-yellow-green-blue ramp is not ordered for protanopes: the FSIVI layer is recoloured with
+# the published red-yellow-green-blue ramp is not ordered for protanopes: the FSIVI layer is recolored with
 # RdYlBu_r from the published raster, placed with the graticule (1.8' = 1114 px; r = 0.999 with the published
-# colours, display range 0.255-0.943 fitted from them); pixels drawn over the layer (rivers) are kept
+# colors, display range 0.255-0.943 fitted from them); pixels drawn over the layer (rivers) are kept
 CM18, V18 = matplotlib.colormaps["RdYlBu_r"], (0.255, 0.943)
-oldbar = img[1934:2197, 115].astype(np.float32)               # published colour bar, top = high
+oldbar = img[1934:2197, 115].astype(np.float32)               # published color bar, top = high
 with rasterio.open(DATA / "heat_map_flood_risk_postClassif.tif") as r:
     v, T = r.read(1), r.transform
 yy, xx = np.mgrid[:img.shape[0], :img.shape[1]]
@@ -301,7 +301,7 @@ val[inside] = v[ri[inside], ci[inside]]
 layer = np.isfinite(val)
 near = binary_dilation(layer, iterations=3) & inside
 dd = np.linalg.norm(img[near].astype(np.float32)[:, None, :] - oldbar[None], axis=-1)
-ok = dd.min(1) < 30                                           # published ramp colour (not a river drawn on top)
+ok = dd.min(1) < 30                                           # published ramp color (not a river drawn on top)
 t = np.where(layer[near], (val[near] - V18[0]) / (V18[1] - V18[0]), 1 - dd.argmin(1) / (len(oldbar) - 1))
 rows, cols_ = np.where(near)
 img[rows[ok], cols_[ok]] = (CM18(np.clip(t[ok], 0, 1))[:, :3] * 255).astype(np.uint8)
@@ -336,11 +336,10 @@ fig.savefig(OUT / "Fig20.pdf", dpi=600)
 plt.close(fig)
 print("Fig. 20 done")
 
-# ---------------- Figs. S4-S6: PCA separability plots (notebook 5.2; its input table is not in the project) ----------
+# ---------------- Figs. S4-S6: PCA separability plots (notebook 5.2; its input table is separability_evaluation_data.csv on Zenodo) ----------
 # The plotting areas are kept; the legend boxes (inside the plots) are removed and the grid lines under them
 # restored, and tick labels, axis labels and legends are redrawn as vector text. As in the published
 # figures, the first principal component has no tick labels.
-from matplotlib.lines import Line2D  # noqa: E402,F811
 
 PCA = [("FigS4.png", "slicing classification by HAND", "classification_hand", 2080, [131, 402, 673, 945, 1216, 1487, 1758],
         [456, 770, 1084, 1398, 1711, 2025, 2339]),

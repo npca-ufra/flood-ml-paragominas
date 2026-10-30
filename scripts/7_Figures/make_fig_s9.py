@@ -1,7 +1,7 @@
 """Supplementary Fig. S9: five-class flood-susceptibility map under the two-tier scheme (very high = flood-prone
 area of the semi-supervised classification; the rest by the Jenks limits 0.51, 0.64 and 0.75 of the FSIVI).
 Drawn at its printed size (0.85 of the supplement text width) as a PDF with vector text; the class raster is
-resampled (nearest) at 600 dpi. Rasters are read from the published artefacts archive, which is not modified."""
+resampled (nearest) at 600 dpi. Rasters are read from scripts/files/ and from the Zenodo FSIVI raster."""
 from pathlib import Path
 
 import matplotlib

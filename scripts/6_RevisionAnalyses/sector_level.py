@@ -1,4 +1,4 @@
-"""Sector-level views of two pooled recall values (Reviewer 3, comment 3.3).
+"""Sector-level views of two pooled recall values (Sects. 4.3 and 4.4, Table S7).
 
   * Recall of the 342 confirmed positives of the held-out test partition (notebook 3.1), with a 95% interval
     from resampling the CPRM/SGB sectors the test pixels belong to (nearest sector, as in protocol_lso).
@@ -47,7 +47,8 @@ print(f"positives: {tab.n_positives.sum()}; largest sector {tab.n_positives.idxm
 
 # Table S7 (LaTeX)
 pu, r11, rpu = cols
-rows = "\n".join(f"{s.replace('_', chr(92) + '_')} & {r.n_positives:.0f} & {r[pu]:.2f} & {r[r11]:.2f} & {r[rpu]:.2f} \\\\" for s, r in tab.iterrows())
+rows = "\n".join(f"{s} & {r.n_positives:.0f} & {r[pu]:.2f} & {r[r11]:.2f} & {r[rpu]:.2f} \\\\"
+                 for s, r in tab.rename(index=lambda s: s.replace("_", "\\_")).iterrows())
 summ = "\n".join(f"{name} & -- & {tab[pu].agg(fn):.2f} & {tab[r11].agg(fn):.2f} & {tab[rpu].agg(fn):.2f} \\\\"
                  for name, fn in (("Unweighted mean", "mean"), ("Median", "median")))
 (OUT / "table_S7.tex").write_text(
