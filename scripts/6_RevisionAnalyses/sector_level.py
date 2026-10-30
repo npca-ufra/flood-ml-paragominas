@@ -56,5 +56,5 @@ summ = "\n".join(f"{name} & -- & {tab[pu].agg(fn):.2f} & {tab[r11].agg(fn):.2f} 
     "main manuscript), with the number of positive samples assigned to each sector (nearest sector). The pooled values of Table~5 "
     "weight the sectors by their number of samples.}\\label{tab:S7}\n"
     "\\footnotesize\n\\begin{tabular*}{\\textwidth}{@{\\extracolsep{\\fill}}lcccc@{}}\n\\toprule\n"
-    "Sector & Positives & PU-RF & RF + random negatives (1:1) & RF + random negatives (PU count) \\\\\n\\midrule\n"
+    "Sector & Positives & PU-RF & Random negatives 1:1 & Random negatives (PU count) \\\\\n\\midrule\n"
     + rows + "\n\\midrule\n" + summ + "\n\\bottomrule\n\\end{tabular*}\n\\end{table}\n")
