@@ -46,7 +46,7 @@ sns.scatterplot(data=t, x="lon", y="lat", hue="sample_type", hue_order=["Unlabel
                 rasterized=True)
 plt.xlabel("Longitude"); plt.ylabel("Latitude")
 plt.gca().xaxis.set_major_locator(mticker.MultipleLocator(0.01))   # as published; 0.005 steps overlap in print
-plt.legend(title="Sample Type", bbox_to_anchor=(1.03, 1), loc="upper left", markerscale=0.8)
+plt.legend(title="Sample Type", loc="upper left", markerscale=0.8)   # inside the plot, over the empty corner
 plt.grid(True); plt.tight_layout()
 plt.savefig(OUT / "Fig7.pdf", dpi=600); plt.close()
 

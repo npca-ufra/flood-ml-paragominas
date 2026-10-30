@@ -10,6 +10,8 @@ The outputs used in the revised manuscript and in the response to the reviewers 
 | `common.py` | Spy labeling of notebook 3.1, the two evaluation protocols and the PU-appropriate metrics | Sect. 3.4.4 |
 | `revision_analyses.py` | Random-negative ablation, alternative PU / presence-only methods, XGBoost and SVM, threshold variants, model without ksat, permutation importance, nested Table 2 | Sect. 4.4, Table 5, Tables S3–S5 |
 | `fsivi_checks.py` | FSIVI agreement with the Random Forest, sensitivity to the weights, direction check | Sect. 4.6, Table S2 |
+| `fsivi_published.py` | Published FSIVI raster sampled at the D* points versus the sample-level index of Table S2 (needs `heat_map_flood_risk_postClassif.tif` from Zenodo in `../files/`) | Sect. 4.6, Sect. S9.3 |
+| `sector_level.py` | Sector-bootstrap interval of the holdout recall and recall per withheld sector (run after `revision_analyses.py`) | Sects. 4.3 and 4.4, Table S7 |
 | `make_tables.py` | LaTeX rows of Table 5 and Tables S3–S6 from `results/` | – |
 | `map_level.py` | Maps of the Random Forest trained with PU labels and with random pseudo-negatives at several ratios, applied to the predictor stack (needs `spatial_data_raster_flood.tif` from Zenodo in `../files/`), with the post-processing of the paper | Sect. 4.4, Table S6 |
 | `ratio_lso.py` | Leave-sector-out evaluation of the same random-negative ratios | Sect. 4.4, Fig. 17, Table S6 |
@@ -30,6 +32,8 @@ python autocorrelation.py     # correlogram of residuals and predictors
 python silhouette_check.py    # silhouette for k = 2-15
 python pu_xmeans_overlap.py   # overlap of the PU and X-Means maps
 python fsivi_checks.py        # Table S2
+python fsivi_published.py     # published FSIVI vs the Table S2 index
+python sector_level.py        # holdout recall interval, Table S7
 python map_level.py           # map-level effect of the random-negative ratio (needs the Zenodo predictor stack)
 python ratio_lso.py           # leave-sector-out for the same ratios
 python pu_map_stability.py    # PU map across spy seeds

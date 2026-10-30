@@ -1,0 +1,6 @@
+Quantity,Value
+Sample points of D*,14837.0
+Sample points inside the published FSIVI domain,10788.0
+"Spearman correlation, published FSIVI vs sample-level FSIVI of Table S2",0.9691483256683882
+"Spearman correlation, published FSIVI vs Random Forest probability",0.7072828589636898
+"Spearman correlation, sample-level FSIVI vs Random Forest probability (same points)",0.7701399953030563
