@@ -226,7 +226,9 @@ for k in range(3):
         buf_m.plot(ax=ax, color="black", zorder=2); sec_m.plot(ax=ax, color="white", zorder=3)
     if k == 2:
         buf_m.plot(ax=ax, color=(0, 0, 25 / 255), zorder=2); sec_m.plot(ax=ax, color="white", zorder=3)
-        ax.scatter(pts.x, pts.y, s=1.1, c=[(0, 0, 200 / 255)], lw=0, zorder=3.5)
+        inside = pts.within(sec_m.iloc[0])                 # class 1 (flood) inside the sectors, class 0 (unlabeled) in the buffer
+        ax.scatter(pts[~inside].x, pts[~inside].y, s=1.1, c=[(0, 0, 200 / 255)], lw=0, zorder=3.5)
+        ax.scatter(pts[inside].x, pts[inside].y, s=1.1, c=["red"], lw=0, zorder=3.6)
     bare(ax, B6)
     fig.text((k * (pw6 + 0.1) + pw6 / 2) / (3 * pw6 + 0.2), 0.02, ["(A)", "(B)", "(C)"][k], ha="center", va="bottom", fontsize=8)
 fig.savefig(OUT / "Fig6.pdf", dpi=600); plt.close(fig)
