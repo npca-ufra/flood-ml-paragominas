@@ -140,7 +140,7 @@ for i, (_, x1, top) in enumerate(frames):
     ax.text(frames[i][0] + 30, top + 30, f"({'ABCDE'[i]})", va="top", fontsize=7)   # inside the frame, top left
 ax.legend(handles=[Patch(fc=np.array((254, 215, 176)) / 255, ec="#8a6d4a", lw=0.4, label="Flood hazard\nareas"),
                    Patch(fc=np.array((8, 48, 107)) / 255, ec="none", label="1 - Flood\nsusceptibility"),   # map colour (the QGIS legend had a lighter blue)
-                   Patch(fc="white", ec="black", lw=0.4, label="0 - Non-flood\nsusceptibility")],
+                   Patch(fc="white", ec="black", lw=0.4, label="0 - Not classified\nas flood-prone")],
           title="LEGEND", loc="lower left", bbox_to_anchor=(45 / 5409, 1 - 3800 / 3862), frameon=False, fontsize=6.5,
           title_fontsize=6.5, alignment="left", handlelength=1.4, borderaxespad=0, labelspacing=0.5)
 fig.savefig(OUT / "Fig16.pdf", dpi=1200)
