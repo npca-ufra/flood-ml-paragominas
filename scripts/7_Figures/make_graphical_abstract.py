@@ -32,10 +32,11 @@ for i in range(60):
 d.ellipse([x0+32,y1-80,x0+56,y1-56],fill=(40,90,160)); d.text((x0+66,y1-90),"flood (P)",font=font(34),fill=CINZA)
 d.ellipse([x0+262,y1-79,x0+284,y1-57],outline=(150,155,165),width=4); d.text((x0+294,y1-90),"unlabeled (U)",font=font(34),fill=CINZA)
 
-# ---- arrow 1
-d.polygon([(860,560),(980,560-36),(980,560+36)][::-1],fill=AZUL)
-d.rectangle([860,540,980,580],fill=AZUL)
-d.polygon([(1050,560),(960,505),(960,615)],fill=AZUL)
+# ---- arrow 1 (same shape as arrow 2, centered in the gap between the panels)
+def arrow(xa, xb, y=580):
+    d.rectangle([xa, y-20, xb-80, y+20], fill=AZUL)                 # shaft
+    d.polygon([(xb, y), (xb-90, y-55), (xb-90, y+55)], fill=AZUL)   # head
+arrow(860, 1030)
 
 # ---- panel 2: method
 x0,y0,x1,y1=1070,200,1740,960
@@ -48,8 +49,7 @@ for t in passos:
 d.text((x0+30,y1-120),"Open data · Google Earth Engine\nGitHub + Zenodo (MIT / CC-BY)",font=font(34),fill=VERDE)
 
 # ---- arrow 2
-d.rectangle([1780,540,1900,580],fill=AZUL)
-d.polygon([(1970,560),(1880,505),(1880,615)],fill=AZUL)
+arrow(1780, 1950)
 
 # ---- panel 3: result (cropped FSIVI map)
 x0,y0,x1,y1=1990,200,2596,960
